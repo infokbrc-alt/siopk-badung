@@ -63,7 +63,9 @@
 <body>
 <div class="login-card">
     <div class="login-header">
-        <div class="login-logo">𝔅</div>
+        <div class="login-logo" style="background: transparent; overflow: hidden; padding: 0;">
+            <img src="{{ asset('img/logo.png') }}" alt="Logo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        </div>
         <div class="login-title">SIOPK Badung</div>
         <div class="login-sub">Sistem Informasi OPK Kabupaten Badung</div>
     </div>

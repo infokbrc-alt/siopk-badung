@@ -1,50 +1,27 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $opk->nama_opk }} — SIOPK Badung</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --tanah:#2C1A0E; --emas:#C8922A; --emas-muda:#E8B84B; --krem:#F7F1E8; --hijau:#2D5A27; --merah:#C0392B; --kuning:#D4A017; }
-        body { font-family:'Inter',sans-serif; background:var(--krem); color:var(--tanah); }
-        .publik-nav { background:var(--tanah); padding:0 1.5rem; height:56px; display:flex; align-items:center; justify-content:space-between; border-bottom:2px solid var(--emas); }
-        .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
-        .nav-logo { width:32px; height:32px; border-radius:50%; background:var(--emas); display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--tanah); }
-        .nav-title { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:700; color:#f7f1e8; }
-        .btn-lapor { background:var(--emas); color:var(--tanah); border:none; padding:6px 16px; border-radius:3px; font-size:0.8rem; font-weight:600; text-decoration:none; }
-        .container-detail { max-width:900px; margin:0 auto; padding:2rem 1rem; }
-        .card-detail { background:white; border:1px solid #d4c9b8; border-radius:4px; margin-bottom:1.2rem; overflow:hidden; }
-        .section-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#9ca3af; margin-bottom:8px; }
-        .info-row { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; border-bottom:1px solid #f0ebe3; font-size:0.83rem; }
-        .info-row:last-child { border-bottom:none; }
-        .info-key { color:#9ca3af; width:130px; flex-shrink:0; }
-        .badge-kritis  { background:rgba(192,57,43,0.1); color:var(--merah); border:1px solid rgba(192,57,43,0.2); padding:3px 12px; border-radius:10px; font-size:0.72rem; font-weight:600; }
-        .badge-waspada { background:rgba(212,160,23,0.1); color:var(--kuning); border:1px solid rgba(212,160,23,0.2); padding:3px 12px; border-radius:10px; font-size:0.72rem; font-weight:600; }
-        .badge-baik    { background:rgba(45,90,39,0.1); color:var(--hijau); border:1px solid rgba(45,90,39,0.2); padding:3px 12px; border-radius:10px; font-size:0.72rem; font-weight:600; }
-        .foto-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(120px,1fr)); gap:8px; }
-        .foto-item { aspect-ratio:1; border-radius:3px; overflow:hidden; cursor:pointer; background:#e8e0d4; }
-        .foto-item img { width:100%; height:100%; object-fit:cover; transition:transform 0.2s; }
-        .foto-item:hover img { transform:scale(1.05); }
-    </style>
-</head>
-<body>
-<nav class="publik-nav">
-    <a href="{{ route('publik.dashboard') }}" class="nav-brand">
-        <div class="nav-logo">𝔅</div>
-        <div class="nav-title">SIOPK Badung</div>
-    </a>
-    <div style="display:flex;align-items:center;gap:1rem;">
-        <a href="{{ route('publik.dashboard') }}" style="color:rgba(247,241,232,0.6);text-decoration:none;font-size:0.82rem;">
-            <i class="bi bi-arrow-left me-1"></i>Kembali ke Peta
-        </a>
-        <a href="{{ route('publik.lapor.index') }}" class="btn-lapor">Lapor OPK</a>
-    </div>
-</nav>
+@extends('layouts.publik')
 
+@section('title', $opk->nama_opk . ' — SIOPK Badung')
+
+@push('styles')
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+<style>
+    .container-detail { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+    .card-detail { background: white; border: 1px solid #d4c9b8; border-radius: 4px; margin-bottom: 1.2rem; overflow: hidden; }
+    .section-label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #9ca3af; margin-bottom: 8px; }
+    .info-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f0ebe3; font-size: 0.83rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: #9ca3af; width: 130px; flex-shrink: 0; }
+    .badge-kritis  { background: rgba(192,57,43,0.1); color: var(--merah); border: 1px solid rgba(192,57,43,0.2); padding: 3px 12px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+    .badge-waspada { background: rgba(212,160,23,0.1); color: var(--kuning); border: 1px solid rgba(212,160,23,0.2); padding: 3px 12px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+    .badge-baik    { background: rgba(45,90,39,0.1); color: var(--hijau); border: 1px solid rgba(45,90,39,0.2); padding: 3px 12px; border-radius: 10px; font-size: 0.72rem; font-weight: 600; }
+    .foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    .foto-item { aspect-ratio: 1; border-radius: 3px; overflow: hidden; cursor: pointer; background: #e8e0d4; }
+    .foto-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.2s; }
+    .foto-item:hover img { transform: scale(1.05); }
+</style>
+@endpush
+
+@section('content')
 <div class="container-detail">
 
     <!-- Header -->
@@ -65,7 +42,7 @@
                         </span>
                         <span class="badge-{{ $opk->kondisi }}">{{ ucfirst($opk->kondisi) }}</span>
                         <span style="background:rgba(45,90,39,0.1);color:var(--hijau);padding:3px 10px;border-radius:2px;font-size:0.72rem;font-weight:500;">
-                            ✓ Terverifikasi Dinas Kebudayaan
+                            <i class="bi bi-check-circle"></i> Terverifikasi Dinas Kebudayaan
                         </span>
                     </div>
                 </div>
@@ -76,7 +53,6 @@
     <div class="row g-3">
         <div class="col-md-8">
 
-            <!-- Foto -->
             @if($opk->fotos->count() > 0)
             <div class="card-detail">
                 <div style="padding:1.2rem;">
@@ -92,7 +68,6 @@
             </div>
             @endif
 
-            <!-- Deskripsi -->
             <div class="card-detail">
                 <div style="padding:1.2rem;">
                     <div class="section-label">Deskripsi Umum</div>
@@ -110,7 +85,6 @@
                 </div>
             </div>
 
-            <!-- Video -->
             @if($opk->videos->count() > 0)
             <div class="card-detail">
                 <div style="padding:1.2rem;">
@@ -134,7 +108,6 @@
 
         <div class="col-md-4">
 
-            <!-- Lokasi -->
             <div class="card-detail">
                 <div style="padding:1.2rem 1.2rem 0;">
                     <div class="section-label">Lokasi</div>
@@ -160,7 +133,6 @@
                 </div>
             </div>
 
-            <!-- Atribut -->
             <div class="card-detail">
                 <div style="padding:1.2rem 1.2rem 0;"><div class="section-label">Informasi OPK</div></div>
                 <div style="padding:0 1.2rem 0.75rem;">
@@ -182,9 +154,8 @@
                 </div>
             </div>
 
-            <!-- Ajakan lapor -->
             <div style="background:linear-gradient(135deg,var(--tanah),#3d2410);border-radius:4px;padding:1.2rem;text-align:center;">
-                <div style="font-size:1.3rem;margin-bottom:6px;">🙏</div>
+                <i class="bi bi-heart" style="font-size:1.3rem;color:var(--emas-muda);margin-bottom:6px;display:block;"></i>
                 <div style="font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:#f7f1e8;margin-bottom:6px;">Tahu OPK lain?</div>
                 <p style="font-size:0.75rem;color:rgba(247,241,232,0.65);margin-bottom:12px;line-height:1.6;">Bantu kami memetakan lebih banyak warisan budaya Bali.</p>
                 <a href="{{ route('publik.lapor.index') }}"
@@ -197,7 +168,6 @@
     </div>
 </div>
 
-<!-- Modal Foto -->
 <div class="modal fade" id="modalFoto" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="background:#1a0f06;border:none;">
@@ -210,8 +180,9 @@
         </div>
     </div>
 </div>
+@endsection
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@push('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 function openFoto(src) {
@@ -224,5 +195,4 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }
 L.marker([{{ $opk->latitude }}, {{ $opk->longitude }}]).addTo(m);
 @endif
 </script>
-</body>
-</html>
+@endpush

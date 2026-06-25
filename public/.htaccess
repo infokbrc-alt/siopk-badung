@@ -23,3 +23,10 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
+# Upload limits untuk form Lapor OPK (10 foto × 10MB + form data)
+<IfModule mod_php.c>
+    php_value upload_max_filesize 10M
+    php_value post_max_size 120M
+    php_value max_file_uploads 20
+</IfModule>

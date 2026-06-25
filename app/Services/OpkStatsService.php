@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\OpkLaporan;
+use Illuminate\Support\Facades\DB;
 
 class OpkStatsService
 {
@@ -20,11 +21,20 @@ class OpkStatsService
 
     public function dashboardPublik(): array
     {
+        $row = OpkLaporan::selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN kondisi = 'kritis'  THEN 1 ELSE 0 END) as kritis,
+                SUM(CASE WHEN kondisi = 'waspada' THEN 1 ELSE 0 END) as waspada,
+                SUM(CASE WHEN kondisi = 'baik'    THEN 1 ELSE 0 END) as baik
+            ")
+            ->where('status_verifikasi', 'disetujui')
+            ->first();
+
         return [
-            'total'   => $this->countDisetujui(),
-            'kritis'  => $this->countDisetujui('kritis'),
-            'waspada' => $this->countDisetujui('waspada'),
-            'baik'    => $this->countDisetujui('baik'),
+            'total'   => (int) ($row->total ?? 0),
+            'kritis'  => (int) ($row->kritis ?? 0),
+            'waspada' => (int) ($row->waspada ?? 0),
+            'baik'    => (int) ($row->baik ?? 0),
         ];
     }
 

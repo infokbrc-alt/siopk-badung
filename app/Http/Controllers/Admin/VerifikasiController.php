@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Events\LaporanVerified;
 use App\Models\{OpkLaporan, OpkRiwayatStatus};
+use App\Services\PetaDataService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -84,6 +85,7 @@ class VerifikasiController extends Controller
             DB::commit();
 
             LaporanVerified::dispatch($laporan, $statusBaru);
+            PetaDataService::invalidateCache();
 
             return redirect()->route('admin.verifikasi.index')
                 ->with('success', "Laporan {$laporan->kode_laporan} berhasil {$statusBaru}.");

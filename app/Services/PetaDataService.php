@@ -2,12 +2,33 @@
 
 namespace App\Services;
 
+use App\Helpers\CacheKeys;
 use App\Models\OpkLaporan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PetaDataService
 {
     public function getPetaData(Request $request, bool $isAdmin = false): array
+    {
+        $version = (int) Cache::get('peta_data_version', 1);
+
+        $cacheKey = $isAdmin
+            ? 'peta_admin_v' . $version . '_' . md5(serialize($request->only(['kondisi', 'kategori_id', 'kecamatan_id'])))
+            : 'peta_publik_v' . $version . '_' . md5($request->get('kondisi', '') . '|' . $request->get('kategori_id', '') . '|' . $request->get('kecamatan_id', ''));
+
+        return Cache::remember($cacheKey, 1800, function () use ($request, $isAdmin) {
+            return $this->buildPetaData($request, $isAdmin);
+        });
+    }
+
+    public static function invalidateCache(): void
+    {
+        Cache::increment('peta_data_version');
+        Cache::forget('publik_dashboard');
+    }
+
+    private function buildPetaData(Request $request, bool $isAdmin): array
     {
         $query = OpkLaporan::select($this->selectColumns($isAdmin))
             ->with([

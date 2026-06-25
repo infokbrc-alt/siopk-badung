@@ -1,111 +1,72 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Lapor OPK — SIOPK Badung</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        :root { --tanah:#2C1A0E; --emas:#C8922A; --emas-muda:#E8B84B; --krem:#F7F1E8; --hijau:#2D5A27; --merah:#C0392B; }
-        body { font-family: 'Inter', sans-serif; background: #f4f0e8; color: var(--tanah); }
+@extends('layouts.publik')
 
-        .publik-nav {
-            background: var(--tanah); padding: 0 1.5rem; height: 56px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 2px solid var(--emas); position: sticky; top: 0; z-index: 99;
-        }
-        .nav-brand { display: flex; align-items: center; gap: 10px; }
-        .nav-logo { width: 32px; height: 32px; border-radius: 50%; background: var(--emas); display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond',serif; font-weight: 700; color: var(--tanah); }
-        .nav-title { font-family: 'Cormorant Garamond',serif; font-size: 1rem; font-weight: 700; color: #f7f1e8; }
+@section('title', 'Lapor OPK — SIOPK Badung')
 
-        .container-lapor { max-width: 900px; margin: 0 auto; padding: 2rem 1rem; }
+@push('styles')
+<style>
+    .container-lapor { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem; }
 
-        /* Step tabs */
-        .step-nav { display: flex; background: white; border: 1px solid #d4c9b8; border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem; }
-        .step-tab { flex: 1; padding: 10px 8px; text-align: center; cursor: pointer; border-right: 1px solid #d4c9b8; transition: all 0.2s; }
-        .step-tab:last-child { border-right: none; }
-        .step-tab.active { background: var(--emas); }
-        .step-tab .step-num { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
-        .step-tab .step-label { font-size: 0.78rem; font-weight: 600; margin-top: 2px; }
-        .step-tab.active .step-num, .step-tab.active .step-label { color: var(--tanah); }
-        .step-tab:not(.active) .step-num, .step-tab:not(.active) .step-label { color: #9ca3af; }
-        .step-tab.done { background: rgba(45,90,39,0.08); }
-        .step-tab.done .step-num, .step-tab.done .step-label { color: var(--hijau); }
+    /* Step tabs */
+    .step-nav { display: flex; background: white; border: 1px solid #d4c9b8; border-radius: 4px; overflow: hidden; margin-bottom: 1.5rem; }
+    .step-tab { flex: 1; padding: 10px 8px; text-align: center; cursor: pointer; border-right: 1px solid #d4c9b8; transition: all 0.2s; }
+    .step-tab:last-child { border-right: none; }
+    .step-tab.active { background: var(--emas); }
+    .step-tab .step-num { font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+    .step-tab .step-label { font-size: 0.78rem; font-weight: 600; margin-top: 2px; }
+    .step-tab.active .step-num, .step-tab.active .step-label { color: var(--tanah); }
+    .step-tab:not(.active) .step-num, .step-tab:not(.active) .step-label { color: #9ca3af; }
+    .step-tab.done { background: rgba(45,90,39,0.08); }
+    .step-tab.done .step-num, .step-tab.done .step-label { color: var(--hijau); }
 
-        /* Form */
-        .form-card { background: white; border: 1px solid #d4c9b8; border-radius: 4px; padding: 1.75rem; }
-        .form-label { font-size: 0.75rem; font-weight: 600; color: var(--tanah); text-transform: uppercase; letter-spacing: 0.06em; }
-        .form-control, .form-select {
-            border: 1px solid #d4c9b8; border-radius: 3px;
-            font-size: 0.88rem; background: #fdfaf5; color: var(--tanah);
-        }
-        .form-control:focus, .form-select:focus { border-color: var(--emas); box-shadow: 0 0 0 3px rgba(200,146,42,0.12); }
-        .form-text { font-size: 0.7rem; color: #9ca3af; }
-        .optional-badge { font-size: 0.62rem; color: #9ca3af; font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 4px; }
-        .required-star { color: var(--merah); }
+    /* Form */
+    .form-card { background: white; border: 1px solid #d4c9b8; border-radius: 4px; padding: 1.75rem; }
+    .form-label { font-size: 0.75rem; font-weight: 600; color: var(--tanah); text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-control, .form-select { border: 1px solid #d4c9b8; border-radius: 3px; font-size: 0.88rem; background: #fdfaf5; color: var(--tanah); }
+    .form-control:focus, .form-select:focus { border-color: var(--emas); box-shadow: 0 0 0 3px rgba(200,146,42,0.12); }
+    .form-text { font-size: 0.7rem; color: #9ca3af; }
+    .optional-badge { font-size: 0.62rem; color: #9ca3af; font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 4px; }
+    .required-star { color: var(--merah); }
 
-        /* Kondisi radio */
-        .kondisi-label { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #d4c9b8; border-radius: 3px; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
-        .kondisi-label:hover { border-color: var(--emas); }
-        .kondisi-label input[type=radio] { accent-color: var(--emas); }
+    .kondisi-label { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid #d4c9b8; border-radius: 3px; cursor: pointer; font-size: 0.85rem; transition: all 0.15s; }
+    .kondisi-label:hover { border-color: var(--emas); }
+    .kondisi-label input[type=radio] { accent-color: var(--emas); }
 
-        /* Tipe pelapor */
-        .tipe-label { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: 1px solid #d4c9b8; border-radius: 3px; cursor: pointer; text-align: center; transition: all 0.15s; }
-        .tipe-label:hover { border-color: var(--emas); background: rgba(200,146,42,0.03); }
-        .tipe-label.selected { border-color: var(--emas); background: rgba(200,146,42,0.06); }
+    .tipe-label { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; border: 1px solid #d4c9b8; border-radius: 3px; cursor: pointer; text-align: center; transition: all 0.15s; }
+    .tipe-label:hover { border-color: var(--emas); background: rgba(200,146,42,0.03); }
+    .tipe-label.selected { border-color: var(--emas); background: rgba(200,146,42,0.06); }
 
-        /* Upload zone */
-        .upload-zone { border: 2px dashed #d4c9b8; border-radius: 3px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #fdfaf5; }
-        .upload-zone:hover { border-color: var(--emas); background: rgba(200,146,42,0.03); }
+    .upload-zone { border: 2px dashed #d4c9b8; border-radius: 3px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: #fdfaf5; }
+    .upload-zone:hover { border-color: var(--emas); background: rgba(200,146,42,0.03); }
 
-        /* Foto preview grid */
-        .foto-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .foto-thumb { aspect-ratio: 1; border-radius: 3px; overflow: hidden; position: relative; background: #e8e0d4; display: flex; align-items: center; justify-content: center; }
-        .foto-thumb img { width: 100%; height: 100%; object-fit: cover; }
-        .foto-del { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--merah); color: white; font-size: 0.55rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .foto-add { aspect-ratio: 1; border: 2px dashed #d4c9b8; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 4px; background: #fdfaf5; transition: all 0.15s; }
-        .foto-add:hover { border-color: var(--emas); }
+    .foto-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .foto-thumb { aspect-ratio: 1; border-radius: 3px; overflow: hidden; position: relative; background: #e8e0d4; display: flex; align-items: center; justify-content: center; }
+    .foto-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-del { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--merah); color: white; font-size: 0.55rem; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .foto-size { position: absolute; bottom: 3px; left: 3px; right: 3px; background: rgba(0,0,0,0.7); color: white; border-radius: 2px; font-size: 0.55rem; text-align: center; padding: 1px 2px; }
+    .foto-toobig { border: 2px solid var(--merah) !important; }
+    .foto-toobig::after { content: 'Terlalu besar'; position: absolute; inset: 0; background: rgba(192,57,43,0.85); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: 700; }
+    .foto-add { aspect-ratio: 1; border: 2px dashed #d4c9b8; border-radius: 3px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; gap: 4px; background: #fdfaf5; transition: all 0.15s; }
+    .foto-add:hover { border-color: var(--emas); }
 
-        /* Wilayah box */
-        .wilayah-box { background: var(--krem); border: 1px solid #d4c9b8; border-radius: 3px; padding: 1rem; }
-        .desa-adat-box { background: rgba(200,146,42,0.05); border: 1px solid rgba(200,146,42,0.2); border-radius: 3px; padding: 1rem; }
+    .wilayah-box { background: var(--krem); border: 1px solid #d4c9b8; border-radius: 3px; padding: 1rem; }
+    .desa-adat-box { background: rgba(200,146,42,0.05); border: 1px solid rgba(200,146,42,0.2); border-radius: 3px; padding: 1rem; }
 
-        /* Sidebar kanan */
-        .lapor-sidebar { width: 240px; flex-shrink: 0; }
-        .progress-card { background: white; border: 1px solid #d4c9b8; border-radius: 4px; padding: 1rem; margin-bottom: 1rem; }
-        .prog-item { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; margin-bottom: 6px; }
-        .prog-dot { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; flex-shrink: 0; }
+    .lapor-sidebar { width: 220px; flex-shrink: 0; }
+    .lapor-sidebar .prog-item { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; margin-bottom: 6px; }
+    .lapor-sidebar .prog-dot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 700; flex-shrink: 0; }
 
-        .btn-emas { background: var(--emas); color: var(--tanah); border: none; font-weight: 600; }
-        .btn-emas:hover { background: var(--emas-muda); color: var(--tanah); }
+    .btn-emas { background: var(--emas); color: var(--tanah); border: none; font-weight: 600; }
+    .btn-emas:hover { background: var(--emas-muda); color: var(--tanah); }
 
-        .alert-danger { background: rgba(192,57,43,0.08); border: none; border-left: 3px solid var(--merah); color: var(--merah); font-size: 0.82rem; }
-    </style>
-</head>
-<body>
+    .alert-danger { background: rgba(192,57,43,0.08); border: none; border-left: 3px solid var(--merah); color: var(--merah); font-size: 0.82rem; }
 
-{{-- Navbar --}}
-<nav class="publik-nav">
-    <div class="nav-brand">
-        <div class="nav-logo">𝔅</div>
-        <div class="nav-title">SIOPK Badung — Lapor OPK</div>
-    </div>
-    <div class="d-flex gap-3 align-items-center">
-        <a href="{{ route('publik.dashboard') }}" style="color:rgba(232,184,75,0.8);text-decoration:none;font-size:0.8rem;">
-            <i class="bi bi-map me-1"></i>Peta OPK
-        </a>
-        <a href="{{ route('publik.lapor.status') }}" style="color:rgba(232,184,75,0.8);text-decoration:none;font-size:0.8rem;">
-            <i class="bi bi-search me-1"></i>Cek Status Laporan
-        </a>
-        <a href="{{ route('login') }}" style="color:rgba(247,241,232,0.5);text-decoration:none;font-size:0.75rem;">
-            Login Dinas
-        </a>
-    </div>
-</nav>
+    @media (max-width: 992px) {
+        .lapor-sidebar { display: none; }
+    }
+</style>
+@endpush
 
+@section('content')
 <div class="container-lapor">
     <div class="mb-4">
         <h1 style="font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:700;margin-bottom:4px;">
@@ -221,7 +182,7 @@
                         <label class="kondisi-label" id="lbl-baik">
                             <input type="radio" name="kondisi" value="baik" {{ old('kondisi','baik') === 'baik' ? 'checked' : '' }} onchange="setKondisi('baik')">
                             <div>
-                                <div style="font-weight:600;font-size:0.85rem;">✅ Baik</div>
+                                <div style="font-weight:600;font-size:0.85rem;"><i class="bi bi-check-circle-fill" style="color:var(--hijau);"></i> Baik</div>
                                 <div style="font-size:0.7rem;color:#9ca3af;">Aktif & terpelihara</div>
                             </div>
                         </label>
@@ -230,7 +191,7 @@
                         <label class="kondisi-label" id="lbl-waspada">
                             <input type="radio" name="kondisi" value="waspada" {{ old('kondisi') === 'waspada' ? 'checked' : '' }} onchange="setKondisi('waspada')">
                             <div>
-                                <div style="font-weight:600;font-size:0.85rem;">⚠️ Waspada</div>
+                                <div style="font-weight:600;font-size:0.85rem;"><i class="bi bi-exclamation-triangle-fill" style="color:var(--kuning);"></i> Waspada</div>
                                 <div style="font-size:0.7rem;color:#9ca3af;">Praktisi berkurang</div>
                             </div>
                         </label>
@@ -239,7 +200,7 @@
                         <label class="kondisi-label" id="lbl-kritis">
                             <input type="radio" name="kondisi" value="kritis" {{ old('kondisi') === 'kritis' ? 'checked' : '' }} onchange="setKondisi('kritis')">
                             <div>
-                                <div style="font-weight:600;font-size:0.85rem;">🔴 Kritis</div>
+                                <div style="font-weight:600;font-size:0.85rem;"><i class="bi bi-exclamation-circle-fill" style="color:var(--merah);"></i> Kritis</div>
                                 <div style="font-size:0.7rem;color:#9ca3af;">Terancam punah</div>
                             </div>
                         </label>
@@ -308,7 +269,7 @@
                                value="{{ old('banjar_adat') }}" placeholder="Nama banjar jika diketahui">
                     </div>
                 </div>
-                <div class="form-text mt-2">💡 Desa Adat dan Desa Dinas bisa berbeda — keduanya penting untuk pendataan OPK di Bali</div>
+                <div class="form-text mt-2">Desa Adat dan Desa Dinas bisa berbeda — keduanya penting untuk pendataan OPK di Bali</div>
             </div>
 
             <div class="mb-3">
@@ -429,7 +390,6 @@
                 </div>
             </div>
 
-            {{-- Praktisi opsional --}}
             <div style="background:var(--krem);border:1px solid #d4c9b8;border-radius:3px;padding:1rem;">
                 <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.8rem;">
                     Informasi Praktisi / Narasumber
@@ -449,7 +409,7 @@
                         <input type="text" name="praktisi_kontak" class="form-control" value="{{ old('praktisi_kontak') }}" placeholder="No. HP (jika bersedia)">
                     </div>
                 </div>
-                <div class="form-text mt-2">⚠️ Data praktisi bersifat rahasia, hanya dapat diakses Dinas Kebudayaan</div>
+                <div class="form-text mt-2">Data praktisi bersifat rahasia, hanya dapat diakses Dinas Kebudayaan</div>
             </div>
 
             <div class="d-flex justify-content-between mt-4">
@@ -482,7 +442,7 @@
                         <span style="font-size:0.68rem;color:#9ca3af;">Tambah Foto</span>
                     </div>
                 </div>
-                <div class="form-text mt-1">Format: JPG, PNG, HEIC · Maks 10MB per foto</div>
+                <div class="form-text mt-1">Format: JPG, PNG, HEIC, WebP · Maks 10MB per foto</div>
                 @error('fotos')<div class="text-danger" style="font-size:0.75rem;">{{ $message }}</div>@enderror
             </div>
 
@@ -537,21 +497,21 @@
                     <div class="col-4">
                         <label class="tipe-label" id="lbl-masyarakat" onclick="setTipe(this,'masyarakat')">
                             <input type="radio" name="tipe_pelapor" value="masyarakat" {{ old('tipe_pelapor','masyarakat') === 'masyarakat' ? 'checked' : '' }} style="accent-color:var(--emas);">
-                            <span style="font-size:1.4rem;">👤</span>
+                            <i class="bi bi-person" style="font-size:1.4rem;"></i>
                             <span style="font-size:0.75rem;font-weight:600;">Masyarakat Umum</span>
                         </label>
                     </div>
                     <div class="col-4">
                         <label class="tipe-label" id="lbl-tokoh_adat" onclick="setTipe(this,'tokoh_adat')">
                             <input type="radio" name="tipe_pelapor" value="tokoh_adat" {{ old('tipe_pelapor') === 'tokoh_adat' ? 'checked' : '' }} style="accent-color:var(--emas);">
-                            <span style="font-size:1.4rem;">👘</span>
+                            <i class="bi bi-people" style="font-size:1.4rem;"></i>
                             <span style="font-size:0.75rem;font-weight:600;">Tokoh Adat / Praktisi</span>
                         </label>
                     </div>
                     <div class="col-4">
                         <label class="tipe-label" id="lbl-petugas_dinas" onclick="setTipe(this,'petugas_dinas')">
                             <input type="radio" name="tipe_pelapor" value="petugas_dinas" {{ old('tipe_pelapor') === 'petugas_dinas' ? 'checked' : '' }} style="accent-color:var(--emas);">
-                            <span style="font-size:1.4rem;">🏛️</span>
+                            <i class="bi bi-building" style="font-size:1.4rem;"></i>
                             <span style="font-size:0.75rem;font-weight:600;">Petugas Dinas</span>
                         </label>
                     </div>
@@ -612,18 +572,17 @@
                     <i class="bi bi-arrow-left me-2"></i>Kembali
                 </button>
                 <button type="submit" class="btn btn-emas flex-grow-1 py-3" style="font-size:0.95rem;letter-spacing:0.05em;">
-                    <i class="bi bi-send me-2"></i>🙏 Kirim Laporan OPK
+                    <i class="bi bi-send me-2"></i>Kirim Laporan OPK
                 </button>
             </div>
         </div>
 
         </form>
-        </div>{{-- end form area --}}
+        </div>
 
         {{-- SIDEBAR KANAN --}}
         <div class="lapor-sidebar d-none d-lg-block">
-            {{-- Progress --}}
-            <div class="progress-card">
+            <div style="background:white;border:1px solid #d4c9b8;border-radius:4px;padding:1rem;">
                 <div style="font-size:0.72rem;font-weight:700;color:var(--tanah);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;">Progress</div>
                 <div style="height:5px;background:#e5e0d8;border-radius:3px;margin-bottom:10px;">
                     <div id="progBar" style="height:100%;width:20%;background:var(--emas);border-radius:3px;transition:width 0.3s;"></div>
@@ -641,28 +600,13 @@
                     @endforeach
                 </div>
             </div>
-
-            {{-- AI info --}}
-            <div style="background:linear-gradient(135deg,#1a0f06,var(--tanah));border-radius:4px;padding:1rem;color:#f7f1e8;border:1px solid rgba(200,146,42,0.3);">
-                <div class="d-flex align-items-center gap-2 mb-2 pb-2" style="border-bottom:1px solid rgba(200,146,42,0.2);">
-                    <span style="width:7px;height:7px;border-radius:50%;background:var(--emas-muda);display:inline-block;animation:blink 2s infinite;"></span>
-                    <span style="font-size:0.65rem;font-weight:700;color:var(--emas-muda);text-transform:uppercase;letter-spacing:0.1em;">AI · Analisis Otomatis</span>
-                </div>
-                <div style="font-size:0.74rem;line-height:1.7;opacity:0.85;">
-                    Saat laporan dikirim, AI akan otomatis:
-                </div>
-                @foreach(['Cek duplikat laporan','Validasi koordinat GPS','Scoring urgensi OPK','Kirim notif WhatsApp','Rekomendasikan ke Dinas'] as $f)
-                <div style="font-size:0.72rem;color:rgba(247,241,232,0.8);margin-top:5px;display:flex;align-items:flex-start;gap:6px;">
-                    <span style="color:var(--emas);font-weight:700;flex-shrink:0;">→</span> {{ $f }}
-                </div>
-                @endforeach
-            </div>
         </div>
 
-    </div>{{-- end flex --}}
-</div>{{-- end container --}}
+    </div>
+</div>
+@endsection
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+@push('scripts')
 <script>
 let step = 1;
 
@@ -677,10 +621,8 @@ function goStep(n) {
     document.getElementById('stab-' + n).classList.add('active');
     step = n;
 
-    // Progress bar
     document.getElementById('progBar').style.width = (n * 20) + '%';
 
-    // Progress list
     for (let i = 1; i <= 5; i++) {
         const p = document.getElementById('prog-' + i);
         const dot = p.querySelector('.prog-dot');
@@ -724,22 +666,44 @@ function ambilGPS() {
     }, () => alert('Gagal mendapatkan GPS. Pastikan izin lokasi diaktifkan.'));
 }
 
-// Foto preview
+const MAX_FOTO_SIZE = 10 * 1024 * 1024; // 10MB
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
 function previewFotos(input) {
     const grid = document.getElementById('fotoGrid');
-    // Hapus preview lama (bukan tombol add)
     grid.querySelectorAll('.foto-thumb').forEach(el => el.remove());
+    const warnEl = document.getElementById('fotoSizeWarning');
+    if (warnEl) warnEl.remove();
 
-    Array.from(input.files).slice(0, 10).forEach((file, i) => {
+    const files = Array.from(input.files).slice(0, 10);
+    let hasOversized = false;
+
+    files.forEach((file, i) => {
+        const isTooBig = file.size > MAX_FOTO_SIZE;
+        if (isTooBig) hasOversized = true;
+
         const reader = new FileReader();
         reader.onload = e => {
             const thumb = document.createElement('div');
-            thumb.className = 'foto-thumb';
-            thumb.innerHTML = `<img src="${e.target.result}"><button type="button" class="foto-del" onclick="hapusFoto(${i})">✕</button>`;
+            thumb.className = 'foto-thumb' + (isTooBig ? ' foto-toobig' : '');
+            thumb.innerHTML = `<img src="${e.target.result}"><button type="button" class="foto-del" onclick="hapusFoto(${i})">✕</button><div class="foto-size">${formatSize(file.size)}</div>`;
             grid.insertBefore(thumb, grid.querySelector('.foto-add'));
         };
         reader.readAsDataURL(file);
     });
+
+    if (hasOversized) {
+        const warn = document.createElement('div');
+        warn.id = 'fotoSizeWarning';
+        warn.style.cssText = 'margin-top:8px;font-size:0.72rem;color:var(--merah);display:flex;align-items:center;gap:6px;';
+        warn.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Foto yang ditandai merah melebihi 10MB dan akan ditolak. Silakan compress terlebih dahulu.';
+        grid.parentNode.insertBefore(warn, grid.nextSibling);
+    }
 }
 
 function hapusFoto(i) {
@@ -755,13 +719,11 @@ function previewDokumen(input) {
     }
 }
 
-// Desa dinamis via AJAX
 document.getElementById('selKecamatan')?.addEventListener('change', function() {
     const id = this.value;
     const sel = document.getElementById('selDesaDinas');
     sel.innerHTML = '<option value="">Memuat...</option>';
     if (!id) { sel.innerHTML = '<option value="">— Pilih Kecamatan Dulu —</option>'; return; }
-
     fetch(`{{ route('api.desa-dinas') }}?kecamatan_id=${id}`)
         .then(r => r.json())
         .then(data => {
@@ -770,14 +732,12 @@ document.getElementById('selKecamatan')?.addEventListener('change', function() {
         });
 });
 
-// Init kondisi visual jika ada old value
 document.addEventListener('DOMContentLoaded', () => {
     const checked = document.querySelector('[name="kondisi"]:checked');
     if (checked) setKondisi(checked.value);
     const tipe = document.querySelector('[name="tipe_pelapor"]:checked');
     if (tipe) document.getElementById('lbl-' + tipe.value)?.classList.add('selected');
 
-    // Jika ada error, kembali ke step yg bermasalah
     @if($errors->any())
         @php
             $errFields = array_keys($errors->messages());
@@ -796,5 +756,4 @@ document.addEventListener('DOMContentLoaded', () => {
     @endif
 });
 </script>
-</body>
-</html>
+@endpush
