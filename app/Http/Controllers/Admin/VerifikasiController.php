@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Events\LaporanVerified;
 use App\Models\{OpkLaporan, OpkRiwayatStatus};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class VerifikasiController extends Controller
 {
-    // Daftar antrian verifikasi
     public function index(Request $request)
     {
         $query = OpkLaporan::with(['kategori', 'kecamatan', 'fotoUtama'])
             ->whereIn('status_verifikasi', ['menunggu', 'ai_review', 'review_dinas']);
 
-        // Filter
         if ($request->filled('kondisi')) {
             $query->where('kondisi', $request->kondisi);
         }
@@ -30,7 +30,6 @@ class VerifikasiController extends Controller
         return view('admin.verifikasi.index', compact('laporans'));
     }
 
-    // Detail satu laporan
     public function show(OpkLaporan $laporan)
     {
         $laporan->load([
@@ -40,42 +39,12 @@ class VerifikasiController extends Controller
         return view('admin.verifikasi.show', compact('laporan'));
     }
 
-    // Setujui laporan → masuk peta resmi
     public function setujui(Request $request, OpkLaporan $laporan)
     {
-        $request->validate([
-            'catatan' => 'nullable|string|max:500',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $statusLama = $laporan->status_verifikasi;
-
-            $laporan->update([
-                'status_verifikasi'  => 'disetujui',
-                'diverifikasi_oleh'  => auth()->id(),
-                'tanggal_verifikasi' => now(),
-                'catatan_verifikasi' => $request->catatan,
-            ]);
-
-            OpkRiwayatStatus::create([
-                'laporan_id'  => $laporan->id,
-                'status_lama' => $statusLama,
-                'status_baru' => 'disetujui',
-                'user_id'     => auth()->id(),
-                'catatan'     => $request->catatan ?? 'Disetujui oleh verifikator.',
-            ]);
-
-            DB::commit();
-            return redirect()->route('admin.verifikasi.index')
-                             ->with('success', "Laporan {$laporan->kode_laporan} berhasil disetujui dan masuk peta OPK.");
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Gagal menyetujui: ' . $e->getMessage());
-        }
+        $request->validate(['catatan' => 'nullable|string|max:500']);
+        return $this->updateVerificationStatus($laporan, 'disetujui', $request->catatan);
     }
 
-    // Tolak laporan
     public function tolak(Request $request, OpkLaporan $laporan)
     {
         $request->validate([
@@ -83,16 +52,25 @@ class VerifikasiController extends Controller
             'alasan'  => 'required|in:tidak_valid,duplikat,kurang_data,diluar_wilayah,lainnya',
         ]);
 
+        $statusBaru = $request->alasan === 'duplikat' ? 'duplikat' : 'ditolak';
+        $catatan    = $request->alasan === 'duplikat'
+            ? "[duplikat] " . $request->catatan
+            : "[{$request->alasan}] " . $request->catatan;
+
+        return $this->updateVerificationStatus($laporan, $statusBaru, $catatan);
+    }
+
+    private function updateVerificationStatus(OpkLaporan $laporan, string $statusBaru, ?string $catatan = null)
+    {
         DB::beginTransaction();
         try {
             $statusLama = $laporan->status_verifikasi;
-            $statusBaru = $request->alasan === 'duplikat' ? 'duplikat' : 'ditolak';
 
             $laporan->update([
                 'status_verifikasi'  => $statusBaru,
                 'diverifikasi_oleh'  => auth()->id(),
                 'tanggal_verifikasi' => now(),
-                'catatan_verifikasi' => $request->catatan,
+                'catatan_verifikasi' => $catatan,
             ]);
 
             OpkRiwayatStatus::create([
@@ -100,15 +78,19 @@ class VerifikasiController extends Controller
                 'status_lama' => $statusLama,
                 'status_baru' => $statusBaru,
                 'user_id'     => auth()->id(),
-                'catatan'     => "[{$request->alasan}] " . $request->catatan,
+                'catatan'     => $catatan ?? ($statusBaru === 'disetujui' ? 'Disetujui oleh verifikator.' : 'Ditolak oleh verifikator.'),
             ]);
 
             DB::commit();
+
+            LaporanVerified::dispatch($laporan, $statusBaru);
+
             return redirect()->route('admin.verifikasi.index')
-                             ->with('success', "Laporan {$laporan->kode_laporan} ditolak.");
+                ->with('success', "Laporan {$laporan->kode_laporan} berhasil {$statusBaru}.");
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Gagal menolak: ' . $e->getMessage());
+            Log::error('Gagal memverifikasi laporan', ['laporan_id' => $laporan->id, 'error' => $e->getMessage()]);
+            return back()->with('error', 'Gagal memverifikasi laporan. Silakan coba lagi.');
         }
     }
 

@@ -2,8 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Kecamatan;
+use App\Models\DesaDinas;
+use App\Models\DesaAdat;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class WilayahSeeder extends Seeder
 {
@@ -89,29 +91,23 @@ class WilayahSeeder extends Seeder
         ];
 
         foreach ($wilayah as $w) {
-            $kecId = DB::table('kecamatans')->insertGetId([
-                'nama'       => $w['nama'],
-                'kode'       => $w['kode'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $kec = Kecamatan::updateOrCreate(
+                ['kode' => $w['kode']],
+                ['nama' => $w['nama']]
+            );
 
             foreach ($w['desa_dinas'] as $desa) {
-                DB::table('desa_dinas')->insert([
-                    'kecamatan_id' => $kecId,
-                    'nama'         => $desa,
-                    'created_at'   => now(),
-                    'updated_at'   => now(),
-                ]);
+                DesaDinas::updateOrCreate(
+                    ['kecamatan_id' => $kec->id, 'nama' => $desa],
+                    []
+                );
             }
 
             foreach ($w['desa_adat'] as $adat) {
-                DB::table('desa_adats')->insert([
-                    'kecamatan_id' => $kecId,
-                    'nama'         => $adat,
-                    'created_at'   => now(),
-                    'updated_at'   => now(),
-                ]);
+                DesaAdat::updateOrCreate(
+                    ['kecamatan_id' => $kec->id, 'nama' => $adat],
+                    []
+                );
             }
         }
     }

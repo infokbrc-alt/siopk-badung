@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class OpkLaporan extends Model
 {
@@ -53,9 +54,21 @@ class OpkLaporan extends Model
     public static function generateKode(): string
     {
         $tahun = date('Y');
-        $last  = self::whereYear('created_at', $tahun)->max('id') ?? 0;
-        return 'SIOPK-' . $tahun . '-' . str_pad($last + 1, 5, '0', STR_PAD_LEFT);
+
+        return DB::transaction(function () use ($tahun) {
+            $count = self::withTrashed()->whereYear('created_at', $tahun)->count();
+            $suffix = str_pad($count + 1, 5, '0', STR_PAD_LEFT);
+
+            return 'SIOPK-' . $tahun . '-' . $suffix;
+        });
     }
+
+    // ---- Scopes ----
+    public function scopeDisetujui($query)    { return $query->where('status_verifikasi', 'disetujui'); }
+    public function scopeKritis($query)       { return $query->where('kondisi', 'kritis'); }
+    public function scopeWaspada($query)      { return $query->where('kondisi', 'waspada'); }
+    public function scopeMenunggu($query)     { return $query->whereIn('status_verifikasi', ['menunggu', 'ai_review', 'review_dinas']); }
+    public function scopePrioritas($query)    { return $query->where('ai_urgency_score', '>=', 7); }
 
     public function getStatusBadgeAttribute(): array
     {

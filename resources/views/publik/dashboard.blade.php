@@ -12,6 +12,7 @@
         :root {
             --tanah:#2C1A0E; --emas:#C8922A; --emas-muda:#E8B84B;
             --krem:#F7F1E8; --hijau:#2D5A27; --merah:#C0392B; --kuning:#D4A017;
+            --emas-rgb:200,146,42; --merah-rgb:192,57,43; --kuning-rgb:212,160,23; --hijau-rgb:45,90,39;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter',sans-serif; background:var(--krem); color:var(--tanah); }
@@ -61,23 +62,23 @@
         .filter-group { padding:1rem; border-bottom:1px solid #f0ebe3; }
         .filter-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; color:var(--tanah); margin-bottom:6px; }
         .filter-btn { display:flex; align-items:center; gap:8px; width:100%; padding:7px 10px; border:1px solid #d4c9b8; border-radius:3px; background:var(--krem); cursor:pointer; font-size:0.8rem; margin-bottom:5px; transition:all 0.15s; }
-        .filter-btn:hover { border-color:var(--emas); background:rgba(200,146,42,0.05); }
-        .filter-btn.active { border-color:var(--emas); background:rgba(200,146,42,0.1); font-weight:600; color:var(--tanah); }
+        .filter-btn:hover { border-color:var(--emas); background:rgba(var(--emas-rgb),0.05); }
+        .filter-btn.active { border-color:var(--emas); background:rgba(var(--emas-rgb),0.1); font-weight:600; color:var(--tanah); }
         .filter-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
 
         /* OPK list */
         .opk-list { flex:1; overflow-y:auto; }
         .opk-item { padding:10px 1rem; border-bottom:1px solid #f0ebe3; cursor:pointer; transition:background 0.15s; display:flex; gap:10px; align-items:flex-start; }
-        .opk-item:hover { background:rgba(200,146,42,0.04); }
-        .opk-item.selected { background:rgba(200,146,42,0.08); border-left:3px solid var(--emas); }
+        .opk-item:hover { background:rgba(var(--emas-rgb),0.04); }
+        .opk-item.selected { background:rgba(var(--emas-rgb),0.08); border-left:3px solid var(--emas); }
         .opk-thumb { width:44px; height:44px; border-radius:3px; background:#e8e0d4; flex-shrink:0; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:1.1rem; }
         .opk-thumb img { width:100%; height:100%; object-fit:cover; }
         .opk-nama { font-weight:600; font-size:0.82rem; color:var(--tanah); line-height:1.3; }
         .opk-meta { font-size:0.68rem; color:#9ca3af; margin-top:3px; }
         .kondisi-pill { display:inline-block; padding:1px 7px; border-radius:10px; font-size:0.6rem; font-weight:700; margin-left:4px; }
-        .pill-kritis { background:rgba(192,57,43,0.1); color:var(--merah); }
-        .pill-waspada { background:rgba(212,160,23,0.1); color:var(--kuning); }
-        .pill-baik { background:rgba(45,90,39,0.1); color:var(--hijau); }
+        .pill-kritis { background:rgba(var(--merah-rgb),0.1); color:var(--merah); }
+        .pill-waspada { background:rgba(var(--kuning-rgb),0.1); color:var(--kuning); }
+        .pill-baik { background:rgba(var(--hijau-rgb),0.1); color:var(--hijau); }
 
         /* PETA */
         #petaPublik { width:100%; height:100%; z-index:1; }
@@ -89,6 +90,8 @@
         .peta-popup-kondisi { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.65rem; font-weight:700; margin-bottom:8px; }
         .peta-popup-btn { display:block; text-align:center; padding:6px; background:var(--emas); color:var(--tanah); text-decoration:none; border-radius:3px; font-size:0.75rem; font-weight:600; }
         .peta-popup-btn:hover { background:var(--emas-muda); color:var(--tanah); }
+
+        .leaflet-popup-content a { color:var(--tanah); }
 
         /* PANEL DETAIL (klik OPK di list) */
         .detail-panel { position:absolute; bottom:0; right:0; width:340px; background:white; border-top:1px solid #d4c9b8; border-left:1px solid #d4c9b8; border-top-left-radius:6px; z-index:400; max-height:65%; overflow-y:auto; display:none; box-shadow:-4px -4px 20px rgba(0,0,0,0.1); }
@@ -287,9 +290,17 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors', maxZoom: 19
 }).addTo(peta);
 
+// ── Baca warna dari design system ──
+const ds = {
+    merah:  getComputedStyle(document.documentElement).getPropertyValue('--merah').trim(),
+    kuning: getComputedStyle(document.documentElement).getPropertyValue('--kuning').trim(),
+    hijau:  getComputedStyle(document.documentElement).getPropertyValue('--hijau').trim(),
+    emas:   getComputedStyle(document.documentElement).getPropertyValue('--emas').trim(),
+};
+
 // ── Warna & Icon ──
 function getColor(kondisi) {
-    return kondisi === 'kritis' ? '#C0392B' : kondisi === 'waspada' ? '#D4A017' : '#2D5A27';
+    return kondisi === 'kritis' ? ds.merah : kondisi === 'waspada' ? ds.kuning : ds.hijau;
 }
 
 function makeIcon(kondisi, selected = false) {
@@ -332,7 +343,7 @@ function renderMarkers(data) {
         if (!opk.lat || !opk.lng) return;
         const m = L.marker([opk.lat, opk.lng], { icon: makeIcon(opk.kondisi) }).addTo(peta);
 
-        const kondisiColor = opk.kondisi === 'kritis' ? '#C0392B' : opk.kondisi === 'waspada' ? '#D4A017' : '#2D5A27';
+        const kondisiColor = getColor(opk.kondisi);
         m.bindPopup(`
             <div class="peta-popup" style="border-top:3px solid ${kondisiColor};padding-top:8px;">
                 <div class="peta-popup-nama">${opk.nama}</div>

@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\CacheKeys;
 use App\Jobs\AnalisisOpkJob;
 use App\Models\OpkLaporan;
-use App\Services\AiOpkAnalyzer;
+use App\Services\{AiOpkAnalyzer, OpkStatsService};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -59,30 +60,8 @@ class AiController extends Controller
     // ─────────────────────────────────────────────
     public function ringkasanEksekutif()
     {
-        // Cache 6 jam agar tidak spam API
-        $ringkasan = Cache::remember('siopk_ringkasan_eksekutif', 21600, function () {
-
-            $kritis = OpkLaporan::where('status_verifikasi', 'disetujui')
-                ->where('kondisi', 'kritis')
-                ->with('kecamatan')
-                ->orderByDesc('ai_urgency_score')
-                ->limit(5)
-                ->get()
-                ->map(fn($o) => "- {$o->nama_opk} (Kec. {$o->kecamatan?->nama}, score: " . number_format($o->ai_urgency_score ?? 0, 1) . ")")
-                ->implode("\n");
-
-            $stats = [
-                'total_opk'       => OpkLaporan::where('status_verifikasi', 'disetujui')->count(),
-                'laporan_baru'    => OpkLaporan::whereDate('created_at', '>=', now()->subDays(7))->count(),
-                'kritis'          => OpkLaporan::where('status_verifikasi', 'disetujui')->where('kondisi', 'kritis')->count(),
-                'waspada'         => OpkLaporan::where('status_verifikasi', 'disetujui')->where('kondisi', 'waspada')->count(),
-                'disetujui'       => OpkLaporan::where('status_verifikasi', 'disetujui')->whereDate('updated_at', '>=', now()->subDays(7))->count(),
-                'ditolak'         => OpkLaporan::where('status_verifikasi', 'ditolak')->whereDate('updated_at', '>=', now()->subDays(7))->count(),
-                'menunggu'        => OpkLaporan::whereIn('status_verifikasi', ['menunggu', 'review_dinas'])->count(),
-                'prioritas_tinggi'=> OpkLaporan::where('status_verifikasi', 'disetujui')->where('ai_urgency_score', '>=', 7)->count(),
-                'opk_kritis_list' => $kritis ?: '(Tidak ada OPK kritis)',
-            ];
-
+        $ringkasan = Cache::remember(CacheKeys::RINGKASAN_EKSEKUTIF, 21600, function () {
+            $stats = app(OpkStatsService::class)->ringkasanEksekutif();
             return $this->ai->ringkasanEksekutif($stats);
         });
 
@@ -98,7 +77,7 @@ class AiController extends Controller
     // ─────────────────────────────────────────────
     public function clearRingkasanCache()
     {
-        Cache::forget('siopk_ringkasan_eksekutif');
+        Cache::forget(CacheKeys::RINGKASAN_EKSEKUTIF);
         return back()->with('success', 'Cache ringkasan eksekutif dihapus. AI akan generate ulang saat diminta.');
     }
 

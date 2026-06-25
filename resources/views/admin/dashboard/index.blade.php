@@ -238,9 +238,16 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 18
 }).addTo(peta);
 
-// Warna marker berdasarkan kondisi
+// Baca warna dari design system
+const ds = {
+    merah:  getComputedStyle(document.documentElement).getPropertyValue('--merah').trim(),
+    kuning: getComputedStyle(document.documentElement).getPropertyValue('--kuning').trim(),
+    hijau:  getComputedStyle(document.documentElement).getPropertyValue('--hijau').trim(),
+    emas:   getComputedStyle(document.documentElement).getPropertyValue('--emas').trim(),
+};
+
 function getColor(kondisi) {
-    return kondisi === 'kritis' ? '#C0392B' : kondisi === 'waspada' ? '#D4A017' : '#2D5A27';
+    return kondisi === 'kritis' ? ds.merah : kondisi === 'waspada' ? ds.kuning : ds.hijau;
 }
 
 function makeIcon(kondisi) {
@@ -272,7 +279,7 @@ function loadPeta(kondisi = '') {
                         <span style="font-size:0.72rem;color:#666;">${opk.ikon_kategori} ${opk.kategori}</span><br>
                         <span style="font-size:0.72rem;color:#666;">📍 ${opk.kecamatan} · ${opk.desa_adat}</span>
                         <hr style="margin:6px 0;">
-                        <a href="${opk.detail_url}" style="font-size:0.75rem;color:#C8922A;font-weight:600;">
+                        <a href="${opk.detail_url}" style="font-size:0.75rem;color:${ds.emas};font-weight:600;">
                             Lihat Detail →
                         </a>
                     </div>

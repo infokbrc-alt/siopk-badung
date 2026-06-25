@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Requests\StoreUserRequest;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 class PenggunaController extends Controller
 {
@@ -33,25 +32,14 @@ class PenggunaController extends Controller
         return view('admin.pengguna.form', ['user' => null]);
     }
 
-    public function store(Request $request)
+    public function store(StoreUserRequest $request)
     {
-        $validated = $request->validate([
-            'name'     => 'required|string|max:150',
-            'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|in:superadmin,admin,verifikator,petugas',
-            'nip'      => 'nullable|string|max:30',
-            'no_hp'    => 'nullable|string|max:20',
-            'instansi' => 'nullable|string|max:150',
-        ], [
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'email.unique'       => 'Email sudah terdaftar.',
-        ]);
+        $validated = $request->validated();
 
         User::create([
             'name'      => $validated['name'],
             'email'     => $validated['email'],
-            'password'  => Hash::make($validated['password']),
+            'password'  => $validated['password'],
             'role'      => $validated['role'],
             'nip'       => $validated['nip'] ?? null,
             'no_hp'     => $validated['no_hp'] ?? null,
@@ -72,22 +60,13 @@ class PenggunaController extends Controller
         return view('admin.pengguna.form', ['user' => $pengguna]);
     }
 
-    public function update(Request $request, User $pengguna)
+    public function update(StoreUserRequest $request, User $pengguna)
     {
         if ($pengguna->isSuperAdmin() && auth()->id() !== $pengguna->id) {
             return back()->with('error', 'Tidak dapat mengedit akun superadmin lain.');
         }
 
-        $validated = $request->validate([
-            'name'     => 'required|string|max:150',
-            'email'    => ['required', 'email', Rule::unique('users')->ignore($pengguna->id)],
-            'password' => 'nullable|string|min:8|confirmed',
-            'role'     => 'required|in:superadmin,admin,verifikator,petugas',
-            'nip'      => 'nullable|string|max:30',
-            'no_hp'    => 'nullable|string|max:20',
-            'instansi' => 'nullable|string|max:150',
-            'is_active'=> 'boolean',
-        ]);
+        $validated = $request->validated();
 
         $pengguna->name      = $validated['name'];
         $pengguna->email     = $validated['email'];
@@ -98,7 +77,7 @@ class PenggunaController extends Controller
         $pengguna->is_active = $request->boolean('is_active', true);
 
         if (!empty($validated['password'])) {
-            $pengguna->password = Hash::make($validated['password']);
+            $pengguna->password = $validated['password'];
         }
 
         $pengguna->save();

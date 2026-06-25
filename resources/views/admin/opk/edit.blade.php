@@ -77,6 +77,44 @@
                         </div>
                     </div>
 
+                    {{-- Foto Management --}}
+                    <div class="mb-4">
+                        <label class="form-label mb-2" style="font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;">Foto ({{ $laporan->fotos->count() }})</label>
+
+                        @if($laporan->fotos->count() > 0)
+                        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                            @foreach($laporan->fotos as $foto)
+                            <div style="position:relative;width:100px;height:100px;border-radius:4px;overflow:hidden;border:2px solid {{ $foto->is_utama ? 'var(--emas)' : '#e5e7eb' }};">
+                                <img src="{{ asset('storage/'.$foto->path) }}" style="width:100%;height:100%;object-fit:cover;">
+                                <button type="button" class="btn-hapus-foto" data-id="{{ $foto->id }}"
+                                        style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,0.9);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;line-height:1;cursor:pointer;"
+                                        title="Hapus foto">&times;</button>
+                                @if($foto->is_utama)
+                                <span style="position:absolute;bottom:0;left:0;right:0;background:var(--emas);color:white;font-size:0.55rem;text-align:center;padding:1px 0;">UTAMA</span>
+                                @else
+                                <button type="button" class="btn-jadikan-utama" data-id="{{ $foto->id }}"
+                                        style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,0.5);color:white;border:none;border-radius:4px;font-size:0.5rem;padding:1px 4px;cursor:pointer;"
+                                        title="Jadikan foto utama">★</button>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+                        @else
+                        <p style="font-size:0.78rem;color:#9ca3af;margin-bottom:12px;">Belum ada foto.</p>
+                        @endif
+
+                        <label class="btn btn-outline-secondary btn-sm" style="cursor:pointer;">
+                            <i class="bi bi-plus me-1"></i>Tambah Foto
+                            <input type="file" name="fotos[]" accept="image/*" multiple
+                                   style="display:none;" onchange="handleFotoChange(this)">
+                        </label>
+                        <div id="foto-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+                        <small style="color:#9ca3af;">Max 2MB. JPG/PNG.</small>
+                    </div>
+
+                    <input type="hidden" name="hapus_foto_ids" id="hapus_foto_ids" value="">
+                    <input type="hidden" name="foto_utama_id" id="foto_utama_id" value="">
+
                 </form>
 
                 <div class="d-flex gap-3 mt-3">
@@ -123,3 +161,43 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+const hapusIds = [];
+
+function handleFotoChange(input) {
+    const preview = document.getElementById('foto-preview');
+    preview.innerHTML = '';
+    for (const file of input.files) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement('div');
+            div.style.cssText = 'position:relative;width:80px;height:80px;border-radius:4px;overflow:hidden;border:2px solid #e5e7eb;';
+            div.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;"><span style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.5);color:white;font-size:0.5rem;text-align:center;padding:1px 0;">BARU</span>`;
+            preview.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+document.querySelectorAll('.btn-hapus-foto').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const id = this.dataset.id;
+        hapusIds.push(id);
+        document.getElementById('hapus_foto_ids').value = hapusIds.join(',');
+        this.closest('div').style.opacity = '0.3';
+        this.disabled = true;
+        this.style.display = 'none';
+    });
+});
+
+document.querySelectorAll('.btn-jadikan-utama').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('foto_utama_id').value = this.dataset.id;
+        document.querySelectorAll('.btn-jadikan-utama').forEach(b => b.textContent = '★');
+        this.textContent = '●';
+    });
+});
+</script>
+@endpush

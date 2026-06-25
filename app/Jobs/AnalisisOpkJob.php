@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
 use Illuminate\Support\Facades\Log;
+use App\Events\AiAnalysisCompleted;
 
 /**
  * AnalisisOpkJob
@@ -71,6 +72,8 @@ class AnalisisOpkJob implements ShouldQueue
             ]);
 
             Log::info("AI selesai: {$laporan->kode_laporan} | Score: {$hasil['urgency_score']}");
+
+            AiAnalysisCompleted::dispatch($laporan);
 
         } catch (\Exception $e) {
             Log::error("AnalisisOpkJob gagal untuk {$laporan->kode_laporan}: " . $e->getMessage());

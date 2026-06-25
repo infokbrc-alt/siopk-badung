@@ -6,7 +6,8 @@ use App\Http\Controllers\Publik\{LaporController, DashboardPublikController};
 use App\Http\Controllers\Admin\{
     DashboardController, VerifikasiController,
     OpkController, AiController,
-    PenggunaController, LaporanAdminController
+    PenggunaController, LaporanAdminController,
+    WilayahController, KategoriController
 };
 
 /*
@@ -18,9 +19,10 @@ use App\Http\Controllers\Admin\{
 // Home → dashboard publik
 Route::get('/', [DashboardPublikController::class, 'index'])->name('publik.dashboard');
 
-// Auth
+// Auth (rate-limited: 5 attempts per minute)
 Route::get('/login',  [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/login', [AuthController::class, 'login'])
+     ->middleware('throttle:5,1')->name('login.post');
 Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
 // Dashboard & peta publik
@@ -30,7 +32,8 @@ Route::get('/opk/{opk}', [DashboardPublikController::class, 'showOpk'])->name('p
 // Form laporan publik
 Route::prefix('lapor')->name('publik.lapor.')->group(function () {
     Route::get('/',       [LaporController::class, 'index'])->name('index');
-    Route::post('/kirim', [LaporController::class, 'store'])->name('store');
+    Route::post('/kirim', [LaporController::class, 'store'])
+         ->middleware('throttle:3,1')->name('store');
     Route::get('/sukses', [LaporController::class, 'sukses'])->name('sukses');
     Route::get('/status', [LaporController::class, 'cekStatus'])->name('status');
 });
@@ -100,13 +103,39 @@ Route::prefix('admin')->name('admin.')->middleware(['auth'])->group(function () 
         Route::delete('/{pengguna}',  [PenggunaController::class, 'destroy'])->name('destroy');
     });
 
+    // Wilayah
+    Route::prefix('wilayah')->name('wilayah.')->middleware('role:superadmin,admin')->group(function () {
+        Route::get('/',                     [WilayahController::class, 'index'])->name('index');
+        Route::post('/kecamatan',           [WilayahController::class, 'storeKecamatan'])->name('kecamatan.store');
+        Route::put('/kecamatan/{kecamatan}', [WilayahController::class, 'updateKecamatan'])->name('kecamatan.update');
+        Route::delete('/kecamatan/{kecamatan}', [WilayahController::class, 'destroyKecamatan'])->name('kecamatan.destroy');
+        Route::post('/desa-dinas',          [WilayahController::class, 'storeDesaDinas'])->name('desa-dinas.store');
+        Route::put('/desa-dinas/{desaDina}', [WilayahController::class, 'updateDesaDinas'])->name('desa-dinas.update');
+        Route::delete('/desa-dinas/{desaDina}', [WilayahController::class, 'destroyDesaDinas'])->name('desa-dinas.destroy');
+        Route::post('/desa-adat',           [WilayahController::class, 'storeDesaAdat'])->name('desa-adat.store');
+        Route::put('/desa-adat/{desaAdat}',  [WilayahController::class, 'updateDesaAdat'])->name('desa-adat.update');
+        Route::delete('/desa-adat/{desaAdat}', [WilayahController::class, 'destroyDesaAdat'])->name('desa-adat.destroy');
+    });
+
+    // Kategori OPK
+    Route::prefix('kategori')->name('kategori.')->middleware('role:superadmin,admin')->group(function () {
+        Route::get('/',             [KategoriController::class, 'index'])->name('index');
+        Route::post('/',            [KategoriController::class, 'store'])->name('store');
+        Route::put('/{kategori}',   [KategoriController::class, 'update'])->name('update');
+        Route::delete('/{kategori}',[KategoriController::class, 'destroy'])->name('destroy');
+    });
+
     // AI
     Route::prefix('ai')->name('ai.')->middleware('role:superadmin,admin,verifikator')->group(function () {
         Route::get('/ringkasan-halaman', fn() => view('admin.ai.ringkasan'))->name('ringkasan-halaman');
-        Route::get('/ringkasan',         [AiController::class, 'ringkasanEksekutif'])->name('ringkasan');
-        Route::post('/chat/{laporan}',   [AiController::class, 'chat'])->name('chat');
-        Route::post('/re-analisis/{laporan}', [AiController::class, 'reAnalisis'])->name('re-analisis');
-        Route::post('/klasifikasi',      [AiController::class, 'klasifikasi'])->name('klasifikasi');
+        Route::get('/ringkasan',         [AiController::class, 'ringkasanEksekutif'])
+             ->middleware('throttle:10,1')->name('ringkasan');
+        Route::post('/chat/{laporan}',   [AiController::class, 'chat'])
+             ->middleware('throttle:20,1')->name('chat');
+        Route::post('/re-analisis/{laporan}', [AiController::class, 'reAnalisis'])
+             ->middleware('throttle:5,1')->name('re-analisis');
+        Route::post('/klasifikasi',      [AiController::class, 'klasifikasi'])
+             ->middleware('throttle:10,1')->name('klasifikasi');
         Route::post('/clear-cache',      [AiController::class, 'clearRingkasanCache'])
              ->middleware('role:superadmin,admin')->name('clear-cache');
     });

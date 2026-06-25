@@ -19,7 +19,7 @@ class TestAiCommand extends Command
         $this->info('');
 
         // 1. Cek API key
-        $apiKey = config('services.claude.api_key');
+        $apiKey = config('services.ai.claude.api_key');
         if (empty($apiKey)) {
             $this->error('✗ CLAUDE_API_KEY belum diset di .env!');
             $this->line('  Tambahkan: CLAUDE_API_KEY=sk-ant-api03-xxxxx');

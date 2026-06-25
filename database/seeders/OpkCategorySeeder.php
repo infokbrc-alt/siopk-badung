@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
+use App\Models\OpkCategory;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class OpkCategorySeeder extends Seeder
 {
@@ -23,14 +23,10 @@ class OpkCategorySeeder extends Seeder
         ];
 
         foreach ($categories as $cat) {
-            DB::table('opk_categories')->insert([
-                'nomor'      => $cat['nomor'],
-                'nama'       => $cat['nama'],
-                'ikon'       => $cat['ikon'],
-                'deskripsi'  => $cat['deskripsi'],
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            OpkCategory::updateOrCreate(
+                ['nomor' => $cat['nomor']],
+                $cat
+            );
         }
     }
 }

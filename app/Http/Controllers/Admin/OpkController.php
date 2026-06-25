@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{OpkLaporan, OpkCategory, Kecamatan};
+use App\Http\Requests\UpdateOpkRequest;
+use App\Models\{OpkLaporan, OpkCategory, Kecamatan, OpkFoto};
+use App\Services\PetaDataService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class OpkController extends Controller
 {
@@ -28,8 +32,8 @@ class OpkController extends Controller
         }
 
         $laporans   = $query->latest()->paginate(20)->withQueryString();
-        $kategori   = OpkCategory::orderBy('nomor')->get();
-        $kecamatans = Kecamatan::orderBy('nama')->get();
+        $kategori   = Cache::remember('kategori_list', 86400, fn() => OpkCategory::orderBy('nomor')->get());
+        $kecamatans = Cache::remember('kecamatan_list', 86400, fn() => Kecamatan::orderBy('nama')->get());
 
         return view('admin.opk.index', compact('laporans', 'kategori', 'kecamatans'));
     }
@@ -42,25 +46,16 @@ class OpkController extends Controller
 
     public function edit(OpkLaporan $laporan)
     {
-        $kategori   = OpkCategory::orderBy('nomor')->get();
-        $kecamatans = Kecamatan::with('desaDinas')->orderBy('nama')->get();
+        $laporan->load(['kategori', 'kecamatan', 'fotos']);
+        $kategori   = Cache::remember('kategori_list', 86400, fn() => OpkCategory::orderBy('nomor')->get());
+        $kecamatans = Cache::remember('kecamatan_with_desa', 86400, fn() => Kecamatan::with('desaDinas')->orderBy('nama')->get());
         return view('admin.opk.edit', compact('laporan', 'kategori', 'kecamatans'));
     }
 
-    public function update(Request $request, OpkLaporan $laporan)
+    public function update(UpdateOpkRequest $request, OpkLaporan $laporan)
     {
-        $validated = $request->validate([
-            'nama_opk'           => 'required|string|max:200',
-            'kondisi'            => 'required|in:baik,waspada,kritis',
-            'status_pelindungan' => 'required|string',
-            'deskripsi_umum'     => 'required|string|min:10',
-            'sejarah_asal_usul'  => 'nullable|string',
-            'nilai_makna_budaya' => 'nullable|string',
-            'latitude'           => 'nullable|numeric|between:-90,90',
-            'longitude'          => 'nullable|numeric|between:-180,180',
-        ]);
+        $validated = $request->validated();
 
-        // FIX: hanya update field yang relevan, jangan sentuh status_verifikasi
         $laporan->nama_opk           = $validated['nama_opk'];
         $laporan->kondisi            = $validated['kondisi'];
         $laporan->status_pelindungan = $validated['status_pelindungan'];
@@ -70,6 +65,50 @@ class OpkController extends Controller
         $laporan->latitude           = $validated['latitude'] ?? $laporan->latitude;
         $laporan->longitude          = $validated['longitude'] ?? $laporan->longitude;
         $laporan->save();
+
+        // Hapus foto yang ditandai
+        $hapusIds = $validated['hapus_foto_ids'] ?? [];
+        if (is_string($hapusIds)) {
+            $hapusIds = array_filter(explode(',', $hapusIds));
+        }
+        if (!empty($hapusIds)) {
+            $fotosToDelete = OpkFoto::where('laporan_id', $laporan->id)
+                ->whereIn('id', $hapusIds)
+                ->get();
+
+            foreach ($fotosToDelete as $foto) {
+                Storage::disk('public')->delete($foto->path);
+                $foto->delete();
+            }
+        }
+
+        // Upload foto baru
+        if ($request->hasFile('fotos')) {
+            $urutanAwal = OpkFoto::where('laporan_id', $laporan->id)->max('urutan') ?? -1;
+
+            foreach ($request->file('fotos') as $index => $foto) {
+                $namaFile = Str::uuid() . '.' . $foto->getClientOriginalExtension();
+                $path     = $foto->storeAs('foto_opk/' . $laporan->id, $namaFile, 'public');
+
+                OpkFoto::create([
+                    'laporan_id'   => $laporan->id,
+                    'nama_file'    => $foto->getClientOriginalName(),
+                    'path'         => $path,
+                    'is_utama'     => false,
+                    'urutan'       => $urutanAwal + $index + 1,
+                    'ukuran_bytes' => $foto->getSize(),
+                    'mime_type'    => $foto->getMimeType(),
+                ]);
+            }
+        }
+
+        // Ubah foto utama
+        if (!empty($validated['foto_utama_id'])) {
+            OpkFoto::where('laporan_id', $laporan->id)->update(['is_utama' => false]);
+            OpkFoto::where('laporan_id', $laporan->id)
+                ->where('id', $validated['foto_utama_id'])
+                ->update(['is_utama' => true]);
+        }
 
         return redirect()->route('admin.opk.show', $laporan)
                          ->with('success', 'Data OPK berhasil diperbarui.');
@@ -96,58 +135,17 @@ class OpkController extends Controller
     public function forceDelete($id)
     {
         $laporan = OpkLaporan::onlyTrashed()->findOrFail($id);
-
-        // Hapus file-file terkait dari storage
-        foreach ($laporan->fotos as $foto) {
-            Storage::disk('public')->delete($foto->path);
-        }
-        foreach ($laporan->dokumens as $dok) {
-            Storage::disk('public')->delete($dok->path);
-        }
-
         $laporan->forceDelete();
 
         return redirect()->route('admin.opk.arsip')
                          ->with('success', 'OPK berhasil dihapus permanen dari database.');
     }
 
-    // Data JSON untuk peta Leaflet
     public function petaJson(Request $request)
     {
-        $query = OpkLaporan::select([
-                'id', 'kode_laporan', 'nama_opk', 'kondisi',
-                'latitude', 'longitude', 'status_pelindungan',
-                'kategori_id', 'kecamatan_id',
-                'nama_desa_adat', 'ai_urgency_score'
-            ])
-            ->with(['kategori:id,nama,ikon', 'kecamatan:id,nama', 'fotoUtama:laporan_id,path'])
-            ->where('status_verifikasi', 'disetujui')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude');
-
-        if ($request->filled('kondisi'))     $query->where('kondisi', $request->kondisi);
-        if ($request->filled('kategori_id')) $query->where('kategori_id', $request->kategori_id);
-        if ($request->filled('kecamatan_id')) $query->where('kecamatan_id', $request->kecamatan_id);
-
-        $data = $query->get()->map(function ($opk) {
-            return [
-                'id'            => $opk->id,
-                'kode'          => $opk->kode_laporan,
-                'nama'          => $opk->nama_opk,
-                'kondisi'       => $opk->kondisi,
-                'lat'           => (float) $opk->latitude,
-                'lng'           => (float) $opk->longitude,
-                'kategori'      => $opk->kategori?->nama,
-                'ikon_kategori' => $opk->kategori?->ikon,
-                'kecamatan'     => $opk->kecamatan?->nama,
-                'desa_adat'     => $opk->nama_desa_adat,
-                'urgency_score' => $opk->ai_urgency_score,
-                'foto_url'      => $opk->fotoUtama ? asset('storage/' . $opk->fotoUtama->path) : null,
-                'detail_url'    => route('admin.opk.show', $opk->id),
-            ];
-        });
-
-        return response()->json($data);
+        return response()->json(
+            app(PetaDataService::class)->getPetaData($request, true)
+        );
     }
 
     // Daftar OPK yang diarsipkan

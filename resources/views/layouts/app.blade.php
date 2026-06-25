@@ -7,11 +7,14 @@
     <title>@yield('title', 'SIOPK Badung') — Sistem Informasi OPK Kabupaten Badung</title>
 
     <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"
+          integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD" crossorigin="anonymous">
     <!-- Leaflet -->
-    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
@@ -25,6 +28,10 @@
             --merah:       #C0392B;
             --kuning:      #D4A017;
             --sidebar-w:   240px;
+            --emas-rgb:    200,146,42;
+            --merah-rgb:   192,57,43;
+            --kuning-rgb:  212,160,23;
+            --hijau-rgb:   45,90,39;
         }
         body { font-family: 'Inter', sans-serif; background: #f4f0e8; color: var(--tanah); }
 
@@ -39,7 +46,7 @@
         }
         .sidebar-brand {
             padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid rgba(200,146,42,0.25);
+            border-bottom: 1px solid rgba(var(--emas-rgb),0.25);
             display: flex; align-items: center; gap: 10px;
         }
         .sidebar-logo {
@@ -58,7 +65,7 @@
         .sidebar-section {
             padding: 1rem 1.5rem 0.25rem;
             font-size: 0.62rem; font-weight: 700;
-            color: rgba(200,146,42,0.5);
+            color: rgba(var(--emas-rgb),0.5);
             text-transform: uppercase; letter-spacing: 0.15em;
         }
         .sidebar-link {
@@ -69,11 +76,11 @@
             transition: all 0.15s;
             border-left: 3px solid transparent;
         }
-        .sidebar-link:hover { color: #F7F1E8; background: rgba(200,146,42,0.08); }
+        .sidebar-link:hover { color: #F7F1E8; background: rgba(var(--emas-rgb),0.08); }
         .sidebar-link.active {
             color: var(--emas-muda);
             border-left-color: var(--emas);
-            background: rgba(200,146,42,0.1);
+            background: rgba(var(--emas-rgb),0.1);
         }
         .sidebar-link .badge { margin-left: auto; font-size: 0.6rem; }
 
@@ -119,9 +126,9 @@
         .kpi-sub   { font-size: 0.75rem; color: #9ca3af; margin-top: 4px; }
 
         /* ---- Status Badges ---- */
-        .badge-kritis  { background-color: rgba(192,57,43,0.1); color: var(--merah); border: 1px solid rgba(192,57,43,0.2); }
-        .badge-waspada { background-color: rgba(212,160,23,0.1); color: var(--kuning); border: 1px solid rgba(212,160,23,0.2); }
-        .badge-baik    { background-color: rgba(45,90,39,0.1);  color: var(--hijau);  border: 1px solid rgba(45,90,39,0.2); }
+        .badge-kritis  { background-color: rgba(var(--merah-rgb),0.1); color: var(--merah); border: 1px solid rgba(var(--merah-rgb),0.2); }
+        .badge-waspada { background-color: rgba(var(--kuning-rgb),0.1); color: var(--kuning); border: 1px solid rgba(var(--kuning-rgb),0.2); }
+        .badge-baik    { background-color: rgba(var(--hijau-rgb),0.1);  color: var(--hijau);  border: 1px solid rgba(var(--hijau-rgb),0.2); }
 
         /* ---- Peta ---- */
         #peta { border-radius: 4px; }
@@ -130,16 +137,16 @@
         .ai-panel {
             background: linear-gradient(135deg, #1a0f06, var(--tanah));
             border-radius: 4px; color: #f7f1e8;
-            border: 1px solid rgba(200,146,42,0.3);
+            border: 1px solid rgba(var(--emas-rgb),0.3);
         }
         .ai-blink { animation: blink 2s infinite; }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
         /* ---- Alert ---- */
         .alert { border-radius: 3px; border: none; }
-        .alert-success { background: rgba(45,90,39,0.1); color: var(--hijau); border-left: 4px solid var(--hijau); }
-        .alert-danger  { background: rgba(192,57,43,0.1); color: var(--merah); border-left: 4px solid var(--merah); }
-        .alert-warning { background: rgba(212,160,23,0.1); color: #8a6010; border-left: 4px solid var(--kuning); }
+        .alert-success { background: rgba(var(--hijau-rgb),0.1); color: var(--hijau); border-left: 4px solid var(--hijau); }
+        .alert-danger  { background: rgba(var(--merah-rgb),0.1); color: var(--merah); border-left: 4px solid var(--merah); }
+        .alert-warning { background: rgba(var(--kuning-rgb),0.1); color: #8a6010; border-left: 4px solid var(--kuning); }
 
         /* ---- Table ---- */
         .table th {
@@ -158,6 +165,8 @@
 
         /* ---- Leaflet popup ---- */
         .leaflet-popup-content-wrapper { border-radius: 4px; }
+        .leaflet-popup-content a { color: var(--tanah); }
+        .leaflet-popup-content a:hover { color: var(--emas-muda); }
         .popup-kritis  { border-top: 3px solid var(--merah); }
         .popup-waspada { border-top: 3px solid var(--kuning); }
         .popup-baik    { border-top: 3px solid var(--hijau); }
@@ -188,9 +197,8 @@
     </a>
     <a href="{{ route('admin.verifikasi.index') }}" class="sidebar-link {{ request()->routeIs('admin.verifikasi.*') ? 'active' : '' }}">
         <i class="bi bi-check2-circle"></i> Verifikasi
-        @php $antrian = \App\Models\OpkLaporan::whereIn('status_verifikasi',['menunggu','review_dinas'])->count() @endphp
-        @if($antrian > 0)
-            <span class="badge bg-danger badge">{{ $antrian }}</span>
+        @if(($sidebarAntrian ?? 0) > 0)
+            <span class="badge bg-danger badge">{{ $sidebarAntrian }}</span>
         @endif
     </a>
 
@@ -203,9 +211,8 @@
     </a>
     <a href="{{ route('admin.ai.ringkasan-halaman') }}" class="sidebar-link {{ request()->routeIs('admin.ai.*') ? 'active' : '' }}">
         <i class="bi bi-robot"></i> AI Ringkasan
-        @php $aiKritis = \App\Models\OpkLaporan::where('status_verifikasi','disetujui')->where('ai_urgency_score','>=',8)->count() @endphp
-        @if($aiKritis > 0)
-            <span class="badge bg-danger badge">{{ $aiKritis }}</span>
+        @if(($sidebarAiKritis ?? 0) > 0)
+            <span class="badge bg-danger badge">{{ $sidebarAiKritis }}</span>
         @endif
     </a>
 
@@ -213,6 +220,12 @@
     @if(auth()->user()->isAdmin())
     <a href="{{ route('admin.pengguna.index') }}" class="sidebar-link {{ request()->routeIs('admin.pengguna.*') ? 'active' : '' }}">
         <i class="bi bi-people"></i> Pengguna
+    </a>
+    <a href="{{ route('admin.wilayah.index') }}" class="sidebar-link {{ request()->routeIs('admin.wilayah.*') ? 'active' : '' }}">
+        <i class="bi bi-geo-alt"></i> Wilayah
+    </a>
+    <a href="{{ route('admin.kategori.index') }}" class="sidebar-link {{ request()->routeIs('admin.kategori.*') ? 'active' : '' }}">
+        <i class="bi bi-tags"></i> Kategori OPK
     </a>
     <a href="{{ route('admin.opk.arsip') }}" class="sidebar-link {{ request()->routeIs('admin.opk.arsip') ? 'active' : '' }}">
         <i class="bi bi-archive"></i> Arsip OPK
@@ -222,7 +235,7 @@
         <i class="bi bi-globe"></i> Portal Publik
     </a>
 
-    <div class="mt-4" style="padding:1rem 1.5rem;border-top:1px solid rgba(200,146,42,0.15);">
+    <div class="mt-4" style="padding:1rem 1.5rem;border-top:1px solid rgba(var(--emas-rgb),0.15);">
         <div style="font-size:0.72rem;color:rgba(247,241,232,0.4);">Login sebagai</div>
         <div style="font-size:0.82rem;color:#e8b84b;font-weight:600;margin-top:2px;">
             {{ auth()->user()->name }}
@@ -232,7 +245,7 @@
         </div>
         <form method="POST" action="{{ route('logout') }}" class="mt-2">
             @csrf
-            <button type="submit" style="background:none;border:none;color:rgba(200,146,42,0.5);font-size:0.75rem;cursor:pointer;padding:0;">
+            <button type="submit" style="background:none;border:none;color:rgba(var(--emas-rgb),0.5);font-size:0.75rem;cursor:pointer;padding:0;">
                 <i class="bi bi-box-arrow-left"></i> Logout
             </button>
         </form>
@@ -274,9 +287,11 @@
 </div>
 
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 <!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
 
 @stack('scripts')
 </body>

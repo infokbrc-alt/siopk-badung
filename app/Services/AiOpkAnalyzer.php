@@ -9,22 +9,41 @@ use Illuminate\Support\Facades\Log;
 /**
  * AiOpkAnalyzer
  * 
- * Menggunakan Claude API untuk:
- * 1. Scoring urgensi pemeliharaan OPK (0–10)
- * 2. Deteksi duplikat dengan laporan lain
- * 3. Rekomendasi tindakan ke Dinas
- * 4. Auto-klasifikasi jenis OPK dari deskripsi
- * 5. Generate ringkasan eksekutif mingguan
+ * Multi-provider AI service (Claude, OpenAI, DeepSeek, Groq, Custom).
+ * 
+ * Konfigurasi via .env:
+ *   AI_PROVIDER=claude|openai|deepseek|groq|custom
+ *   <PROVIDER>_API_KEY=...
+ *   <PROVIDER>_API_URL=...  (opsional, ada default)
+ *   <PROVIDER>_MODEL=...    (opsional, ada default)
+ * 
+ * Custom provider bisa pakai format Claude atau OpenAI (CUSTOM_AI_TYPE).
  */
 class AiOpkAnalyzer
 {
-    private string $apiUrl   = 'https://api.anthropic.com/v1/messages';
-    private string $model    = 'claude-sonnet-4-20250514';
-    private int    $maxTokens = 1024;
+    private string $provider;
+    private array  $config;
 
-    public function __construct(
-        private readonly string $apiKey
-    ) {}
+    // ─────────────────────────────────────────────
+    //  CONSTRUCTOR
+    // ─────────────────────────────────────────────
+    public function __construct()
+    {
+        $this->provider = config('services.ai.provider', 'claude');
+        $this->config   = config("services.ai.{$this->provider}", []);
+
+        // Fallback ke claude jika provider tidak ditemukan
+        if (empty($this->config)) {
+            $this->provider = 'claude';
+            $this->config   = config('services.ai.claude', []);
+        }
+    }
+
+    private function apiKey():    string { return (string) ($this->config['api_key'] ?? ''); }
+    private function apiUrl():    string { return (string) ($this->config['api_url'] ?? ''); }
+    private function model():     string { return (string) ($this->config['model'] ?? ''); }
+    private function maxTokens(): int    { return (int) ($this->config['max_tokens'] ?? 1024); }
+    private function timeout():   int    { return (int) ($this->config['timeout'] ?? 30); }
 
     // ─────────────────────────────────────────────
     //  1. ANALISIS UTAMA — dipanggil setelah laporan masuk
@@ -37,7 +56,7 @@ class AiOpkAnalyzer
             ->latest()
             ->limit(5)
             ->get(['id', 'nama_opk', 'kondisi', 'nama_desa_adat', 'kategori_id'])
-            ->map(fn($l) => "- [{$l->id}] {$l->nama_opk} ({$l->nama_desa_adat}, kondisi: {$l->kondisi})")
+            ->map(fn($l) => "- [{$l->id}] " . $this->sanitize($l->nama_opk) . " (" . $this->sanitize($l->nama_desa_adat) . ", kondisi: {$l->kondisi})")
             ->implode("\n");
 
         $prompt = <<<PROMPT
@@ -45,15 +64,15 @@ Kamu adalah sistem AI untuk Dinas Kebudayaan Kabupaten Badung, Bali.
 Tugasmu adalah menganalisis laporan Objek Pemajuan Kebudayaan (OPK) dari masyarakat.
 
 ## DATA LAPORAN BARU:
-- Nama OPK     : {$laporan->nama_opk}
-- Jenis OPK    : {$laporan->kategori?->nama}
+- Nama OPK     : {$this->sanitize($laporan->nama_opk)}
+- Jenis OPK    : {$this->sanitize($laporan->kategori?->nama ?? '')}
 - Kondisi      : {$laporan->kondisi}
-- Kecamatan    : {$laporan->kecamatan?->nama}
-- Desa Adat    : {$laporan->nama_desa_adat}
-- Frekuensi    : {$laporan->frekuensi_pelaksanaan}
-- Kepemilikan  : {$laporan->status_kepemilikan}
-- Deskripsi    : {$laporan->deskripsi_umum}
-- Praktisi     : {$laporan->praktisi_nama} (usia: {$laporan->praktisi_usia})
+- Kecamatan    : {$this->sanitize($laporan->kecamatan?->nama ?? '')}
+- Desa Adat    : {$this->sanitize($laporan->nama_desa_adat)}
+- Frekuensi    : {$this->sanitize($laporan->frekuensi_pelaksanaan ?? '')}
+- Kepemilikan  : {$this->sanitize($laporan->status_kepemilikan ?? '')}
+- Deskripsi    : {$this->sanitize($laporan->deskripsi_umum)}
+- Praktisi     : {$this->sanitize($laporan->praktisi_nama ?? '')} (usia: {$laporan->praktisi_usia})
 
 ## OPK YANG SUDAH TERDAFTAR (pembanding duplikat):
 {$laporanLain}
@@ -98,7 +117,7 @@ PROMPT;
     }
 
     // ─────────────────────────────────────────────
-    //  2. CEK DUPLIKAT — bandingkan dua laporan
+    //  2. CEK DUPLIKAT
     // ─────────────────────────────────────────────
     public function cekDuplikat(OpkLaporan $baru, OpkLaporan $lama): float
     {
@@ -107,16 +126,16 @@ Bandingkan dua laporan OPK berikut dan tentukan persentase kemiripannya (0–100
 Pertimbangkan nama, lokasi, jenis, dan deskripsi.
 
 ## Laporan A (Baru):
-Nama: {$baru->nama_opk}
-Jenis: {$baru->kategori?->nama}
-Lokasi: {$baru->nama_desa_adat}, {$baru->kecamatan?->nama}
-Deskripsi: {$baru->deskripsi_umum}
+Nama: {$this->sanitize($baru->nama_opk)}
+Jenis: {$this->sanitize($baru->kategori?->nama ?? '')}
+Lokasi: {$this->sanitize($baru->nama_desa_adat)}, {$this->sanitize($baru->kecamatan?->nama ?? '')}
+Deskripsi: {$this->sanitize($baru->deskripsi_umum)}
 
 ## Laporan B (Sudah ada):
-Nama: {$lama->nama_opk}
-Jenis: {$lama->kategori?->nama}
-Lokasi: {$lama->nama_desa_adat}, {$lama->kecamatan?->nama}
-Deskripsi: {$lama->deskripsi_umum}
+Nama: {$this->sanitize($lama->nama_opk)}
+Jenis: {$this->sanitize($lama->kategori?->nama ?? '')}
+Lokasi: {$this->sanitize($lama->nama_desa_adat)}, {$this->sanitize($lama->kecamatan?->nama ?? '')}
+Deskripsi: {$this->sanitize($lama->deskripsi_umum)}
 
 Jawab HANYA dengan angka desimal 0–100 (contoh: 75.5), tanpa penjelasan.
 PROMPT;
@@ -147,7 +166,7 @@ Buat ringkasan eksekutif mingguan dalam Bahasa Indonesia yang profesional dan ri
 - OPK prioritas tinggi (AI score ≥7): {$stats['prioritas_tinggi']}
 
 ## OPK KRITIS TERATAS:
-{$stats['opk_kritis_list']}
+{$this->sanitize($stats['opk_kritis_list'])}
 
 Tulis ringkasan eksekutif dengan format:
 1. Kondisi Umum (2 kalimat)
@@ -163,15 +182,15 @@ PROMPT;
     }
 
     // ─────────────────────────────────────────────
-    //  4. AUTO-KLASIFIKASI OPK dari deskripsi
+    //  4. AUTO-KLASIFIKASI OPK
     // ─────────────────────────────────────────────
     public function klasifikasiOtomatis(string $namaOpk, string $deskripsi): ?int
     {
         $prompt = <<<PROMPT
 Berdasarkan nama dan deskripsi OPK berikut, tentukan jenis OPK yang paling tepat.
 
-Nama OPK  : {$namaOpk}
-Deskripsi : {$deskripsi}
+Nama OPK  : {$this->sanitize($namaOpk)}
+Deskripsi : {$this->sanitize($deskripsi)}
 
 Pilih SALAH SATU nomor dari daftar berikut:
 1 = Tradisi Lisan (tutur, cerita rakyat, pantun)
@@ -196,7 +215,7 @@ PROMPT;
     }
 
     // ─────────────────────────────────────────────
-    //  5. CHAT ASISTEN untuk verifikator
+    //  5. CHAT ASISTEN
     // ─────────────────────────────────────────────
     public function chatAsisten(string $pertanyaan, OpkLaporan $laporan): string
     {
@@ -205,15 +224,15 @@ Kamu adalah asisten AI untuk verifikator Dinas Kebudayaan Kabupaten Badung.
 Jawab pertanyaan verifikator tentang laporan OPK berikut.
 
 ## KONTEKS LAPORAN:
-Nama     : {$laporan->nama_opk}
-Jenis    : {$laporan->kategori?->nama}
+Nama     : {$this->sanitize($laporan->nama_opk)}
+Jenis    : {$this->sanitize($laporan->kategori?->nama ?? '')}
 Kondisi  : {$laporan->kondisi}
-Lokasi   : {$laporan->nama_desa_adat}, {$laporan->kecamatan?->nama}
-Deskripsi: {$laporan->deskripsi_umum}
+Lokasi   : {$this->sanitize($laporan->nama_desa_adat)}, {$this->sanitize($laporan->kecamatan?->nama ?? '')}
+Deskripsi: {$this->sanitize($laporan->deskripsi_umum)}
 AI Score : {$laporan->ai_urgency_score}/10
 
 ## PERTANYAAN VERIFIKATOR:
-{$pertanyaan}
+{$this->sanitize($pertanyaan)}
 
 Jawab dalam Bahasa Indonesia, profesional, maksimal 150 kata.
 PROMPT;
@@ -225,30 +244,60 @@ PROMPT;
     // ─────────────────────────────────────────────
     //  PRIVATE HELPERS
     // ─────────────────────────────────────────────
-    private function callApi(string $prompt, int $maxTokens = null): array
+    private function sanitize(?string $input): string
     {
+        if ($input === null || $input === '') {
+            return '';
+        }
+        $cleaned = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $input);
+        return mb_substr(trim($cleaned), 0, 2000);
+    }
+
+    /**
+     * Panggil API AI — adaptif terhadap provider.
+     * Provider "claude" dan provider "custom" dengan type="claude" 
+     * menggunakan Anthropic response format.
+     * Sisanya (openai, deepseek, groq, custom type=openai) 
+     * menggunakan OpenAI-compatible response format. 
+     */
+    private function callApi(string $prompt, ?int $maxTokens = null): array
+    {
+        $tokens = $maxTokens ?? $this->maxTokens();
+
         try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'x-api-key'         => $this->apiKey,
+            $body = [
+                'model'      => $this->model(),
+                'max_tokens' => $tokens,
+                'messages'   => [
+                    ['role' => 'user', 'content' => $prompt],
+                ],
+            ];
+
+            if ($this->isClaudeFormat()) {
+                $headers = [
+                    'x-api-key'         => $this->apiKey(),
                     'anthropic-version' => '2023-06-01',
                     'content-type'      => 'application/json',
-                ])
-                ->post($this->apiUrl, [
-                    'model'      => $this->model,
-                    'max_tokens' => $maxTokens ?? $this->maxTokens,
-                    'messages'   => [
-                        ['role' => 'user', 'content' => $prompt],
-                    ],
-                ]);
+                ];
+            } else {
+                $headers = [
+                    'Authorization' => 'Bearer ' . $this->apiKey(),
+                    'content-type'  => 'application/json',
+                ];
+            }
+
+            $response = Http::timeout($this->timeout())
+                ->connectTimeout(10)
+                ->retry(3, fn(int $attempt) => $attempt <= 3 ? $attempt * 500 : 2000)
+                ->withHeaders($headers)
+                ->post($this->apiUrl(), $body);
 
             if ($response->successful()) {
-                $data    = $response->json();
-                $content = $data['content'][0]['text'] ?? '';
+                $content = $this->parseResponseContent($response->json());
                 return ['success' => true, 'content' => trim($content)];
             }
 
-            Log::error('SIOPK AI API Error', [
+            Log::error("SIOPK AI Error [{$this->provider}]", [
                 'status' => $response->status(),
                 'body'   => $response->body(),
             ]);
@@ -256,14 +305,34 @@ PROMPT;
             return ['success' => false, 'content' => '', 'error' => $response->body()];
 
         } catch (\Exception $e) {
-            Log::error('SIOPK AI Exception', ['message' => $e->getMessage()]);
+            Log::error("SIOPK AI Exception [{$this->provider}]", ['message' => $e->getMessage()]);
             return ['success' => false, 'content' => '', 'error' => $e->getMessage()];
         }
     }
 
+    private function parseResponseContent(array $data): string
+    {
+        if ($this->isClaudeFormat()) {
+            // Anthropic/Claude: data.content[0].text
+            return $data['content'][0]['text'] ?? '';
+        }
+        // OpenAI / DeepSeek / Groq / Custom: data.choices[0].message.content
+        return $data['choices'][0]['message']['content'] ?? '';
+    }
+
+    private function isClaudeFormat(): bool
+    {
+        if ($this->provider === 'claude') {
+            return true;
+        }
+        if ($this->provider === 'custom' && ($this->config['type'] ?? 'openai') === 'claude') {
+            return true;
+        }
+        return false;
+    }
+
     private function parseJson(string $content): array
     {
-        // Bersihkan markdown code block jika ada
         $clean = preg_replace('/```json|```/i', '', $content);
         $clean = trim($clean);
 
@@ -273,14 +342,12 @@ PROMPT;
 
     private function defaultAnalysis(OpkLaporan $laporan): array
     {
-        // Fallback jika API tidak tersedia
         $score = match($laporan->kondisi) {
             'kritis'  => 7.5,
             'waspada' => 4.5,
             default   => 2.0,
         };
 
-        // Bonus score jika praktisi tua & tunggal
         if ($laporan->praktisi_usia && $laporan->praktisi_usia > 60) {
             $score = min(10, $score + 1.5);
         }
@@ -289,7 +356,7 @@ PROMPT;
             'urgency_score'    => $score,
             'duplikat_score'   => 0.0,
             'duplikat_id'      => null,
-            'rekomendasi'      => "OPK dengan kondisi {$laporan->kondisi} di {$laporan->nama_desa_adat}. Perlu verifikasi lapangan oleh tim Dinas Kebudayaan.",
+            'rekomendasi'      => "OPK dengan kondisi {$laporan->kondisi} di {$this->sanitize($laporan->nama_desa_adat)}. Perlu verifikasi lapangan oleh tim Dinas Kebudayaan.",
             'alasan_urgensi'   => "Dihitung berdasarkan kondisi OPK ({$laporan->kondisi}) secara otomatis.",
             'saran_verifikasi' => 'Lakukan kunjungan lapangan untuk memvalidasi data.',
         ];
