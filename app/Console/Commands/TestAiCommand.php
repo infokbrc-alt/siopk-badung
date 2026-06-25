@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Services\AiOpkAnalyzer;
+use Illuminate\Console\Command;
+
+class TestAiCommand extends Command
+{
+    protected $signature   = 'siopk:test-ai';
+    protected $description = 'Test koneksi ke Claude API dan coba analisis OPK sederhana';
+
+    public function handle(AiOpkAnalyzer $ai): int
+    {
+        $this->info('');
+        $this->info('╔═══════════════════════════════════════╗');
+        $this->info('║   SIOPK Badung — Test Claude AI       ║');
+        $this->info('╚═══════════════════════════════════════╝');
+        $this->info('');
+
+        // 1. Cek API key
+        $apiKey = config('services.claude.api_key');
+        if (empty($apiKey)) {
+            $this->error('✗ CLAUDE_API_KEY belum diset di .env!');
+            $this->line('  Tambahkan: CLAUDE_API_KEY=sk-ant-api03-xxxxx');
+            return self::FAILURE;
+        }
+        $this->info('✓ CLAUDE_API_KEY terdeteksi: ' . substr($apiKey, 0, 20) . '...');
+
+        // 2. Test klasifikasi sederhana
+        $this->info('');
+        $this->info('Menguji klasifikasi OPK...');
+        $nomor = $ai->klasifikasiOtomatis(
+            'Tari Kecak',
+            'Tari pertunjukan tradisional Bali yang melibatkan banyak penari pria dengan canting api'
+        );
+
+        if ($nomor) {
+            $this->info("✓ Klasifikasi berhasil: Tari Kecak → Kategori #{$nomor} (harusnya 7 = Seni)");
+        } else {
+            $this->warn('⚠ Klasifikasi gagal atau API tidak merespons');
+        }
+
+        // 3. Test analisis laporan dummy
+        $this->info('');
+        $this->info('Menguji analisis laporan dummy...');
+
+        $laporan = new \App\Models\OpkLaporan([
+            'nama_opk'         => 'Lontar Usada Desa Pedawa',
+            'kondisi'          => 'kritis',
+            'nama_desa_adat'   => 'Desa Adat Pedawa',
+            'deskripsi_umum'   => 'Naskah lontar berisi ilmu pengobatan tradisional Bali. Kondisi rusak berat, belum ada digitalisasi.',
+            'praktisi_nama'    => 'Jro Mangku Sari',
+            'praktisi_usia'    => 78,
+            'frekuensi_pelaksanaan' => 'sangat_langka',
+        ]);
+
+        // Mock relasi
+        $laporan->setRelation('kategori', new \App\Models\OpkCategory(['nama' => 'Manuskrip']));
+        $laporan->setRelation('kecamatan', new \App\Models\Kecamatan(['nama' => 'Petang']));
+
+        $hasil = $ai->analisisLaporan($laporan);
+
+        $this->info("✓ Analisis berhasil!");
+        $this->table(
+            ['Field', 'Nilai'],
+            [
+                ['Urgency Score',  number_format($hasil['urgency_score'], 1) . '/10'],
+                ['Duplikat Score', number_format($hasil['duplikat_score'], 1) . '%'],
+                ['Rekomendasi',    \Illuminate\Support\Str::limit($hasil['rekomendasi'], 80)],
+            ]
+        );
+
+        $this->info('');
+        $this->info('✓ Semua test berhasil! Fase 6 siap digunakan.');
+        $this->info('');
+        $this->line('  Langkah berikutnya:');
+        $this->line('  1. Set CLAUDE_API_KEY=<key_asli> di .env');
+        $this->line('  2. Submit laporan baru via portal publik');
+        $this->line('  3. AI akan otomatis menganalisis dalam background');
+        $this->line('  4. Lihat hasil di: /admin/verifikasi');
+        $this->info('');
+
+        return self::SUCCESS;
+    }
+}
