@@ -162,6 +162,20 @@ docker compose exec app php artisan config:cache
 
 ---
 
+## Panduan Setup
+
+Dokumentasi lengkap deployment dan development: lihat folder **[documentation/](documentation/)**.
+
+| File | Isi |
+|------|-----|
+| [documentation/readme.md](documentation/readme.md) | Prasyarat umum, perintah artisan, troubleshooting |
+| [documentation/setup-development.md](documentation/setup-development.md) | Development lokal — Windows, macOS, Linux |
+| [documentation/setup-production-docker.md](documentation/setup-production-docker.md) | Production — Docker Compose |
+| [documentation/setup-production-vps.md](documentation/setup-production-vps.md) | Production — VPS manual (LEMP stack) |
+| [documentation/setup-production-cpanel.md](documentation/setup-production-cpanel.md) | Production — cPanel / Shared Hosting |
+
+---
+
 ## Keamanan
 
 - `.env` **tidak boleh di-commit** — sudah di `.gitignore`
