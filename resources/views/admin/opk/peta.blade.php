@@ -33,7 +33,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script type="module">
 const peta = L.map('peta').setView([-8.65, 115.18], 11);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

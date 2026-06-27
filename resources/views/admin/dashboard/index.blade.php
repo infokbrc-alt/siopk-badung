@@ -229,7 +229,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script type="module">
 // Inisialisasi peta Leaflet
 const peta = L.map('peta').setView([-8.65, 115.18], 11);
 

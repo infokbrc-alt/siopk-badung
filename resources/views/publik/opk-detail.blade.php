@@ -211,7 +211,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script type="module">
 const fotoList = [
     @foreach($opk->fotos as $foto)
     '{{ asset('storage/'.$foto->path) }}'@if(!$loop->last),@endif

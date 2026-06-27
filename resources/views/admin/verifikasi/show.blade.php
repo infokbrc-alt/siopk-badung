@@ -228,7 +228,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script type="module">
 @if($laporan->latitude && $laporan->longitude)
 const m = L.map('petaVerif').setView([{{ $laporan->latitude }},{{ $laporan->longitude }}],15);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(m);
