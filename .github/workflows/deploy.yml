@@ -119,7 +119,7 @@ jobs:
           APP_DEBUG: true
 
       - name: Run tests
-        run: php artisan test --parallel
+        run: php artisan test
         env:
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
