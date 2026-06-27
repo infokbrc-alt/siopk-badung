@@ -132,7 +132,7 @@
 @endsection
 
 @push('scripts')
-<script>
+<script type="module">
 const ds = {
     emas:   getComputedStyle(document.documentElement).getPropertyValue('--emas').trim() || 'var(--emas)',
     merah:  getComputedStyle(document.documentElement).getPropertyValue('--merah').trim() || 'var(--merah)',

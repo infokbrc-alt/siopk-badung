@@ -69,47 +69,66 @@ class LaporanAdminController extends Controller
         return view('admin.laporan.index', $data);
     }
 
-    // Export CSV — streaming dengan cursor
     public function exportCsv()
     {
-        $filename = 'opk-badung-'.now()->format('Y-m-d').'.csv';
+        $filename = 'siopk-badung-'.now()->format('Y-m-d-His').'.csv';
 
         $headers = [
-            'Content-Type' => 'text/csv',
+            'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 
         $callback = function () {
             $out = fopen('php://output', 'w');
-            // BOM untuk Excel
             fprintf($out, chr(0xEF).chr(0xBB).chr(0xBF));
 
             fputcsv($out, [
-                'Kode', 'Nama OPK', 'Jenis OPK', 'Kondisi',
-                'Kecamatan', 'Desa Dinas', 'Desa Adat',
-                'Latitude', 'Longitude',
-                'Status Pelindungan', 'AI Score',
+                'Kode Laporan',
+                'Nama OPK',
+                'Kategori',
+                'Kondisi',
+                'Kecamatan',
+                'Desa Dinas',
+                'Desa Adat',
+                'Latitude',
+                'Longitude',
+                'Tahun Diketahui',
+                'Status Pelindungan',
+                'Frekuensi Pelaksanaan',
+                'Status Kepemilikan',
+                'Praktisi',
+                'Usia Praktisi',
+                'Urgensi (AI)',
+                'Rekomendasi AI',
                 'Tanggal Lapor',
-            ], ';');
+                'Status Verifikasi',
+            ]);
 
-            OpkLaporan::with(['kategori', 'kecamatan', 'desaDinas'])
+            OpkLaporan::with(['kategori', 'kecamatan', 'desaDinas', 'verifikator'])
                 ->disetujui()
                 ->cursor()
                 ->each(function ($o) use ($out) {
                     fputcsv($out, [
                         $o->kode_laporan,
                         $o->nama_opk,
-                        $o->kategori?->nama,
+                        $o->kategori?->nama ?? '',
                         $o->kondisi,
-                        $o->kecamatan?->nama,
-                        $o->desaDinas?->nama,
-                        $o->nama_desa_adat,
+                        $o->kecamatan?->nama ?? '',
+                        $o->desaDinas?->nama ?? '',
+                        $o->nama_desa_adat ?? '',
                         $o->latitude,
                         $o->longitude,
-                        $o->status_pelindungan,
-                        $o->ai_urgency_score,
-                        $o->created_at->format('Y-m-d'),
-                    ], ';');
+                        $o->tahun_diketahui ?? '',
+                        $o->status_pelindungan ?? '',
+                        $o->frekuensi_pelaksanaan ?? '',
+                        $o->status_kepemilikan ?? '',
+                        $o->praktisi_nama ?? '',
+                        $o->praktisi_usia ?? '',
+                        $o->ai_urgency_score ?? '',
+                        $o->ai_rekomendasi ?? '',
+                        $o->created_at->format('Y-m-d H:i'),
+                        $o->status_verifikasi,
+                    ]);
                 });
 
             fclose($out);
