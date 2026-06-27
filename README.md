@@ -13,7 +13,7 @@ Pemetaan Partisipatif 10 OPK · UU No. 5 Tahun 2017
 
 | Layer | Teknologi |
 |---|---|
-| Backend | Laravel 11/12, PHP 8.2+ |
+| Backend | Laravel 12, PHP 8.4+ |
 | Database | MySQL 8 |
 | Cache / Queue | Redis |
 | Frontend | Bootstrap 5 + Blade |

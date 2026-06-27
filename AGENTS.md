@@ -3,7 +3,7 @@
 ## Project Identity
 
 - **Name**: SIOPK Badung (Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung)
-- **Stack**: Laravel 11, PHP 8.2+, MySQL, Bootstrap 5, Blade, Livewire/Flux (partial)
+- **Stack**: Laravel 12, PHP 8.4+, MySQL, Bootstrap 5, Blade, Livewire/Flux (partial)
 - **Scale**: Mid-size government application (70+ PHP files, 10 models, ~30 Blade views)
 - **Pattern**: Modular Monolith — single Laravel app with service layer
 
