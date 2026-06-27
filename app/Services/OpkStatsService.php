@@ -9,14 +9,16 @@ class OpkStatsService
 {
     public function dashboardAdmin(): array
     {
+        $startOfMonth = now()->startOfMonth()->toDateString();
+        $endOfMonth = now()->endOfMonth()->toDateString();
         $row = DB::table('opk_laporans')
             ->selectRaw("
                 SUM(CASE WHEN status_verifikasi = 'disetujui' THEN 1 ELSE 0 END) as total_opk,
                 SUM(CASE WHEN status_verifikasi = 'disetujui' AND kondisi = 'kritis' THEN 1 ELSE 0 END) as kritis,
                 SUM(CASE WHEN status_verifikasi IN ('menunggu', 'review_dinas') THEN 1 ELSE 0 END) as menunggu,
                 SUM(CASE WHEN status_verifikasi = 'disetujui' AND kondisi = 'baik' THEN 1 ELSE 0 END) as terlindungi,
-                SUM(CASE WHEN MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW()) THEN 1 ELSE 0 END) as bulan_ini
-            ")
+                SUM(CASE WHEN DATE(created_at) BETWEEN ? AND ? THEN 1 ELSE 0 END) as bulan_ini
+            ", [$startOfMonth, $endOfMonth])
             ->whereNull('deleted_at')
             ->first();
 
@@ -50,6 +52,8 @@ class OpkStatsService
 
     public function laporanAdmin(): array
     {
+        $startOfMonth = now()->startOfMonth()->toDateString();
+        $endOfMonth = now()->endOfMonth()->toDateString();
         $row = DB::table('opk_laporans')
             ->selectRaw("
                 SUM(CASE WHEN status_verifikasi = 'disetujui' THEN 1 ELSE 0 END) as disetujui,
@@ -58,8 +62,8 @@ class OpkStatsService
                 SUM(CASE WHEN status_verifikasi = 'disetujui' AND kondisi = 'baik' THEN 1 ELSE 0 END) as baik,
                 SUM(CASE WHEN status_verifikasi = 'ditolak' THEN 1 ELSE 0 END) as ditolak,
                 SUM(CASE WHEN status_verifikasi IN ('menunggu', 'review_dinas') THEN 1 ELSE 0 END) as menunggu,
-                SUM(CASE WHEN MONTH(created_at) = MONTH(NOW()) AND YEAR(created_at) = YEAR(NOW()) THEN 1 ELSE 0 END) as bulan_ini
-            ")
+                SUM(CASE WHEN DATE(created_at) BETWEEN ? AND ? THEN 1 ELSE 0 END) as bulan_ini
+            ", [$startOfMonth, $endOfMonth])
             ->whereNull('deleted_at')
             ->first();
 
@@ -77,17 +81,18 @@ class OpkStatsService
 
     public function ringkasanEksekutif(): array
     {
+        $sevenDaysAgo = now()->subDays(7)->format('Y-m-d');
         $row = DB::table('opk_laporans')
             ->selectRaw("
                 SUM(CASE WHEN status_verifikasi = 'disetujui' THEN 1 ELSE 0 END) as total_opk,
                 SUM(CASE WHEN status_verifikasi = 'disetujui' AND kondisi = 'kritis' THEN 1 ELSE 0 END) as kritis,
                 SUM(CASE WHEN status_verifikasi = 'disetujui' AND kondisi = 'waspada' THEN 1 ELSE 0 END) as waspada,
                 SUM(CASE WHEN status_verifikasi = 'disetujui' AND ai_urgency_score >= 7 THEN 1 ELSE 0 END) as prioritas_tinggi,
-                SUM(CASE WHEN status_verifikasi = 'disetujui' AND DATE(updated_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as disetujui_7hari,
-                SUM(CASE WHEN status_verifikasi = 'ditolak' AND DATE(updated_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as ditolak_7hari,
+                SUM(CASE WHEN status_verifikasi = 'disetujui' AND DATE(updated_at) >= ? THEN 1 ELSE 0 END) as disetujui_7hari,
+                SUM(CASE WHEN status_verifikasi = 'ditolak' AND DATE(updated_at) >= ? THEN 1 ELSE 0 END) as ditolak_7hari,
                 SUM(CASE WHEN status_verifikasi IN ('menunggu', 'review_dinas') THEN 1 ELSE 0 END) as menunggu,
-                SUM(CASE WHEN DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as laporan_baru
-            ")
+                SUM(CASE WHEN DATE(created_at) >= ? THEN 1 ELSE 0 END) as laporan_baru
+            ", [$sevenDaysAgo, $sevenDaysAgo, $sevenDaysAgo])
             ->whereNull('deleted_at')
             ->first();
 

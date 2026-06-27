@@ -31,9 +31,17 @@ class LaporanAdminController extends Controller
                 'laporans as kritis'  => fn($q) => $q->disetujui()->kritis(),
             ])->orderByDesc('total')->get();
 
+            $driver = DB::connection()->getDriverName();
+            $monthExpr = $driver === 'sqlite'
+                ? "CAST(strftime('%m', created_at) AS INTEGER)"
+                : 'MONTH(created_at)';
+            $yearExpr = $driver === 'sqlite'
+                ? "CAST(strftime('%Y', created_at) AS INTEGER)"
+                : 'YEAR(created_at)';
+
             $tren = OpkLaporan::select(
-                    DB::raw('MONTH(created_at) as bulan'),
-                    DB::raw('YEAR(created_at) as tahun'),
+                    DB::raw("{$monthExpr} as bulan"),
+                    DB::raw("{$yearExpr} as tahun"),
                     DB::raw('COUNT(*) as total')
                 )
                 ->where('created_at', '>=', now()->subMonths(6))

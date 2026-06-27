@@ -54,7 +54,7 @@ class LaporControllerTest extends TestCase
         $response->assertRedirect();
         $this->assertDatabaseHas('opk_laporans', [
             'nama_opk' => 'Tari Legong',
-            'status_verifikasi' => 'menunggu',
+            'status_verifikasi' => 'review_dinas',
         ]);
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\DesaDinas;
 use App\Models\OpkLaporan;
 use App\Models\OpkCategory;
 use App\Models\Kecamatan;
@@ -19,13 +20,14 @@ class OpkLaporanTest extends TestCase
         parent::setUp();
 
         OpkCategory::create(['nomor' => 7, 'nama' => 'Seni', 'ikon' => '🎨']);
-        Kecamatan::create(['nama' => 'Kuta Selatan', 'kode' => 'KS']);
+        $kecamatan = Kecamatan::create(['nama' => 'Kuta Selatan', 'kode' => 'KS']);
+        DesaDinas::create(['nama' => 'Jimbaran', 'kecamatan_id' => $kecamatan->id]);
 
         $this->laporan = OpkLaporan::create([
             'kode_laporan'       => 'SIOPK-2025-00001',
             'nama_opk'           => 'Tari Barong',
             'kategori_id'        => 1,
-            'kondisi'            => 'ba ik',
+            'kondisi'            => 'baik',
             'kecamatan_id'       => 1,
             'desa_dinas_id'      => 1,
             'nama_desa_adat'     => 'Desa Adat Jimbaran',

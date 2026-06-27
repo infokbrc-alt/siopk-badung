@@ -33,28 +33,28 @@
     <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
 
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "SIOPK Badung",
-        "alternateName": "Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung",
-        "url": "{{ url('/') }}",
-        "description": "Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung — portal resmi inventarisasi dan pemetaan objek kebudayaan di Kabupaten Badung, Bali.",
-        "publisher": {
-            "@type": "GovernmentOrganization",
-            "name": "Dinas Kebudayaan Kabupaten Badung",
-            "url": "{{ url('/') }}"
-        },
-        "inLanguage": "id",
-        "potentialAction": {
-            "@type": "SearchAction",
-            "target": {
-                "@type": "EntryPoint",
-                "urlTemplate": "{{ url('/') }}?cari={search_term_string}"
-            },
-            "query-input": "required name=search_term_string"
-        }
-    }
+        {!! json_encode([
+            '@@context' => 'https://schema.org',
+            '@@type' => 'WebSite',
+            'name' => 'SIOPK Badung',
+            'alternateName' => 'Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung',
+            'url' => url('/'),
+            'description' => 'Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung — portal resmi inventarisasi dan pemetaan objek kebudayaan di Kabupaten Badung, Bali.',
+            'publisher' => [
+                '@type' => 'GovernmentOrganization',
+                'name' => 'Dinas Kebudayaan Kabupaten Badung',
+                'url' => url('/'),
+            ],
+            'inLanguage' => 'id',
+            'potentialAction' => [
+                '@type' => 'SearchAction',
+                'target' => [
+                    '@type' => 'EntryPoint',
+                    'urlTemplate' => url('/') . '?cari={search_term_string}',
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
+        ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}
     </script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -127,7 +127,11 @@
         </a>
     </div>
     <div class="nav-actions">
-        @auth
+        @php
+            $loggedIn = auth()->check();
+            $showLaporBtn = !request()->routeIs('publik.lapor.*');
+        @endphp
+        @if($loggedIn)
             <a href="{{ route('admin.dashboard') }}" class="nav-login-link">
                 <i class="bi bi-speedometer2"></i> Panel Admin
             </a>
@@ -135,8 +139,8 @@
             <a href="{{ route('login') }}" class="nav-login-link">
                 <i class="bi bi-shield-lock"></i> Login Dinas
             </a>
-        @endauth
-        @if(!request()->routeIs('publik.lapor.*'))
+        @endif
+        @if($showLaporBtn)
             <a href="{{ route('publik.lapor.index') }}" class="btn-lapor">
                 <i class="bi bi-plus-circle"></i> Lapor Sekarang
             </a>

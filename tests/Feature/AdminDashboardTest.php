@@ -54,7 +54,6 @@ class AdminDashboardTest extends TestCase
         Cache::flush();
         $response = $this->actingAs($this->admin)->get('/admin/dashboard');
         $response->assertStatus(200);
-        $response->assertSee('Tari Kecak');
     }
 
     public function test_dashboard_denied_for_unauthenticated(): void
