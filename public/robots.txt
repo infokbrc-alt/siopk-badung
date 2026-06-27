@@ -1,2 +1,8 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /login
+Disallow: /logout
+Disallow: /api/
+Allow: /
+
+Sitemap: https://siopk.badungkab.go.id/sitemap.xml

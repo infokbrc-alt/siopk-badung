@@ -35,13 +35,25 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}      ✓ Dependencies terinstall${NC}"
 
-# 3. Generate APP_KEY
-echo -e "${YELLOW}[3/7] Generate application key...${NC}"
+# 3. Set folder permissions
+echo -e "${YELLOW}[3/8] Mengatur permission folder...${NC}"
+chmod -R 775 storage bootstrap/cache 2>/dev/null
+chown -R www-data:www-data storage bootstrap/cache 2>/dev/null
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}      ✓ Permission diatur (www-data)${NC}"
+else
+    echo -e "${YELLOW}      ⚠ chown gagal — Anda mungkin bukan root. Lanjut...${NC}"
+    chmod -R 777 storage bootstrap/cache 2>/dev/null
+    echo -e "${GREEN}      ✓ Permission diatur (fallback 777)${NC}"
+fi
+
+# 4. Generate APP_KEY
+echo -e "${YELLOW}[4/8] Generate application key...${NC}"
 php artisan key:generate
 echo -e "${GREEN}      ✓ App key berhasil digenerate${NC}"
 
-# 4. Buat database
-echo -e "${YELLOW}[4/7] Membuat database MySQL...${NC}"
+# 5. Buat database
+echo -e "${YELLOW}[5/8] Membuat database MySQL...${NC}"
 echo ""
 echo -e "      ${BLUE}Pastikan MySQL XAMPP sudah berjalan!${NC}"
 echo -e "      Database yang akan dibuat: ${YELLOW}siopk_badung${NC}"
@@ -54,8 +66,8 @@ else
     echo -e "      Buat manual via phpMyAdmin: CREATE DATABASE siopk_badung;"
 fi
 
-# 5. Migrate & Seed
-echo -e "${YELLOW}[5/7] Menjalankan migrasi & seeder...${NC}"
+# 6. Migrate & Seed
+echo -e "${YELLOW}[6/8] Menjalankan migrasi & seeder...${NC}"
 php artisan migrate --force
 if [ $? -ne 0 ]; then
     echo -e "${RED}      ✗ Migrasi gagal. Periksa koneksi database di .env${NC}"
@@ -64,8 +76,8 @@ fi
 php artisan db:seed --force
 echo -e "${GREEN}      ✓ Migrasi & data awal berhasil${NC}"
 
-# 6. Storage link
-echo -e "${YELLOW}[6/7] Membuat storage symlink...${NC}"
+# 7. Storage link
+echo -e "${YELLOW}[7/8] Membuat storage symlink...${NC}"
 php artisan storage:link
 echo -e "${GREEN}      ✓ Storage symlink berhasil${NC}"
 

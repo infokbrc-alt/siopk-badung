@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreLaporanRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class StoreLaporanRequest extends FormRequest
             'kondisi'              => 'required|in:baik,waspada,kritis',
             // Step 2
             'kecamatan_id'         => 'required|exists:kecamatans,id',
-            'desa_dinas_id'        => 'required|exists:desa_dinas,id',
+            'desa_dinas_id'        => ['required', Rule::exists('desa_dinas', 'id')->where('kecamatan_id', $this->kecamatan_id)],
             'nama_desa_adat'       => 'required|string|max:150',
             'banjar_adat'          => 'nullable|string|max:150',
             'lokasi_spesifik'      => 'nullable|string|max:255',
@@ -49,7 +50,7 @@ class StoreLaporanRequest extends FormRequest
             // Step 5
             'tipe_pelapor'         => 'required|in:masyarakat,tokoh_adat,petugas_dinas',
             'pelapor_nama'         => 'required|string|max:150',
-            'pelapor_nik'          => 'required|string|size:16',
+            'pelapor_nik'          => 'required|string|size:16|regex:/^\d+$/',
             'pelapor_whatsapp'     => 'required|string|max:20',
             'pelapor_email'        => 'nullable|email|max:150',
             'setuju_1'             => 'accepted',
@@ -65,6 +66,7 @@ class StoreLaporanRequest extends FormRequest
             'kondisi.required'        => 'Kondisi OPK wajib dipilih.',
             'kecamatan_id.required'   => 'Kecamatan wajib dipilih.',
             'desa_dinas_id.required'  => 'Desa dinas wajib dipilih.',
+            'desa_dinas_id.exists'    => 'Desa dinas tidak sesuai dengan kecamatan yang dipilih.',
             'nama_desa_adat.required' => 'Nama desa adat wajib diisi.',
             'deskripsi_umum.required' => 'Deskripsi umum wajib diisi.',
             'deskripsi_umum.min'      => 'Deskripsi minimal 50 karakter.',
@@ -77,6 +79,7 @@ class StoreLaporanRequest extends FormRequest
             'dokumen.uploaded'       => 'Dokumen gagal diupload. Pastikan ukuran file tidak melebihi 20MB.',
             'pelapor_nama.required'   => 'Nama pelapor wajib diisi.',
             'pelapor_nik.required'    => 'NIK wajib diisi.',
+            'pelapor_nik.regex'       => 'NIK harus berupa 16 digit angka.',
             'pelapor_nik.size'        => 'NIK harus 16 digit.',
             'pelapor_whatsapp.required' => 'Nomor WhatsApp wajib diisi.',
             'setuju_1.accepted'       => 'Anda harus menyetujui pernyataan pertama.',

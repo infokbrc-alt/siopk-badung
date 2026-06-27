@@ -37,6 +37,12 @@ class OpkLaporan extends Model
         'tanggal_verifikasi' => 'datetime',
     ];
 
+    protected $hidden = [
+        'pelapor_nik',
+        'pelapor_whatsapp',
+        'pelapor_email',
+    ];
+
     // ---- Relasi ----
     public function kategori()    { return $this->belongsTo(OpkCategory::class, 'kategori_id'); }
     public function kecamatan()   { return $this->belongsTo(Kecamatan::class, 'kecamatan_id'); }

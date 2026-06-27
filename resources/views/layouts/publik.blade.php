@@ -4,7 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'SIOPK Badung') — Sistem Informasi OPK Kabupaten Badung</title>
+    <title>@yield('title', 'SIOPK Badung') — Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung</title>
+
+    <meta name="description" content="@yield('meta-description', 'SIOPK Badung — Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung. Jelajahi peta interaktif OPK, laporkan objek kebudayaan baru, dan cek status laporan Anda secara online.')">
+    <meta name="keywords" content="SIOPK Badung, OPK Badung, Objek Pemajuan Kebudayaan, kebudayaan Bali, warisan budaya Badung, peta budaya, cagar budaya Badung, inventarisasi budaya, lapor budaya, Disbud Badung, Dinas Kebudayaan Badung, budaya Bali, tradisi Badung">
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+    <link rel="canonical" href="{{ url()->current() }}">
+
+    <meta property="og:title" content="@yield('title', 'SIOPK Badung') — Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung">
+    <meta property="og:description" content="@yield('meta-description', 'SIOPK Badung — Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung. Jelajahi peta interaktif OPK, laporkan objek kebudayaan baru, dan cek status laporan Anda secara online.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="SIOPK Badung">
+    <meta property="og:locale" content="id_ID">
+    <meta property="og:image" content="{{ asset('img/logo.png') }}">
+    <meta property="og:image:width" content="512">
+    <meta property="og:image:height" content="512">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="Logo SIOPK Badung">
+
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="@yield('title', 'SIOPK Badung') — Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung">
+    <meta name="twitter:description" content="@yield('meta-description', 'SIOPK Badung — Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung. Jelajahi peta interaktif OPK, laporkan objek kebudayaan baru, dan cek status laporan Anda.')">
+    <meta name="twitter:image" content="{{ asset('img/logo.png') }}">
+    <meta name="twitter:image:alt" content="Logo SIOPK Badung">
+
+    <link rel="alternate" hreflang="id" href="{{ url()->current() }}">
+    <link rel="alternate" hreflang="x-default" href="{{ url()->current() }}">
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "SIOPK Badung",
+        "alternateName": "Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung",
+        "url": "{{ url('/') }}",
+        "description": "Sistem Informasi Objek Pemajuan Kebudayaan Kabupaten Badung — portal resmi inventarisasi dan pemetaan objek kebudayaan di Kabupaten Badung, Bali.",
+        "publisher": {
+            "@type": "GovernmentOrganization",
+            "name": "Dinas Kebudayaan Kabupaten Badung",
+            "url": "{{ url('/') }}"
+        },
+        "inLanguage": "id",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+                "@type": "EntryPoint",
+                "urlTemplate": "{{ url('/') }}?cari={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">

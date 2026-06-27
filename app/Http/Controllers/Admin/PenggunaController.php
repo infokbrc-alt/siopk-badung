@@ -36,16 +36,17 @@ class PenggunaController extends Controller
     {
         $validated = $request->validated();
 
-        User::create([
+        $user = User::create([
             'name'      => $validated['name'],
             'email'     => $validated['email'],
             'password'  => $validated['password'],
-            'role'      => $validated['role'],
             'nip'       => $validated['nip'] ?? null,
             'no_hp'     => $validated['no_hp'] ?? null,
             'instansi'  => $validated['instansi'] ?? null,
             'is_active' => true,
         ]);
+        $user->role = $validated['role'];
+        $user->save();
 
         return redirect()->route('admin.pengguna.index')
                          ->with('success', "Pengguna {$validated['name']} berhasil ditambahkan.");
@@ -74,7 +75,7 @@ class PenggunaController extends Controller
         $pengguna->nip       = $validated['nip'] ?? $pengguna->nip;
         $pengguna->no_hp     = $validated['no_hp'] ?? $pengguna->no_hp;
         $pengguna->instansi  = $validated['instansi'] ?? $pengguna->instansi;
-        $pengguna->is_active = $request->boolean('is_active', true);
+        $pengguna->is_active = $validated['is_active'] ?? true;
 
         if (!empty($validated['password'])) {
             $pengguna->password = $validated['password'];
@@ -90,6 +91,9 @@ class PenggunaController extends Controller
     {
         if ($pengguna->id === auth()->id()) {
             return back()->with('error', 'Tidak dapat menonaktifkan akun sendiri.');
+        }
+        if ($pengguna->isSuperAdmin()) {
+            return back()->with('error', 'Tidak dapat menonaktifkan akun superadmin.');
         }
         $pengguna->update(['is_active' => !$pengguna->is_active]);
         $status = $pengguna->is_active ? 'diaktifkan' : 'dinonaktifkan';

@@ -35,11 +35,12 @@ Route::prefix('lapor')->name('publik.lapor.')->group(function () {
     Route::post('/kirim', [LaporController::class, 'store'])
          ->middleware('throttle:3,1')->name('store');
     Route::get('/sukses', [LaporController::class, 'sukses'])->name('sukses');
-    Route::get('/status', [LaporController::class, 'cekStatus'])->name('status');
+    Route::get('/status', [LaporController::class, 'cekStatus'])
+         ->middleware('throttle:10,1')->name('status');
 });
 
 // AJAX API publik
-Route::prefix('api')->name('api.')->group(function () {
+Route::prefix('api')->name('api.')->middleware('throttle:30,1')->group(function () {
     Route::get('/desa-dinas', [LaporController::class, 'getDesaDinas'])->name('desa-dinas');
     Route::get('/desa-adat',  [LaporController::class, 'getDesaAdat'])->name('desa-adat');
 });

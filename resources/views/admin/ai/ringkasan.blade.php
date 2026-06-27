@@ -205,12 +205,13 @@ function cleanMarkdown(text) {
 }
 
 function renderRingkasan(ringkasan) {
-    return ringkasan
+    const escaped = ringkasan.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return escaped
         .split('\n')
         .filter(l => l.trim())
         .map(l => {
             const t = l.trim();
-            if (t.startsWith('<h4>')) return t;
+            if (t.startsWith('&lt;h4&gt;')) return t;
             if (/^\d+\./.test(t)) return `<div style="margin-top:10px;font-weight:600;color:#E8B84B;">${cleanMarkdown(t)}</div>`;
             if (t.startsWith('→')) return `<div style="padding-left:12px;margin-top:4px;font-size:0.8rem;opacity:0.9;">${t}</div>`;
             return `<div style="font-size:0.83rem;line-height:1.8;opacity:0.9;margin-top:6px;">${cleanMarkdown(t)}</div>`;
@@ -264,7 +265,7 @@ function loadRingkasan() {
         } else {
             area.innerHTML = `<div style="color:#f08080;font-size:0.82rem;text-align:center;margin-top:2rem;">
                 <i class="bi bi-exclamation-triangle" style="font-size:1.5rem;display:block;margin-bottom:8px;"></i>
-                ${data.message.replace(/\n/g,'<br>') || 'Gagal mendapatkan ringkasan.'}
+                ${data.message.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g,'<br>') || 'Gagal mendapatkan ringkasan.'}
                 <br><small style="color:#9ca3af;margin-top:8px;display:block;">Provider terkonfigurasi: ${data.provider || 'tidak diketahui'}</small>
             </div>`;
         }
