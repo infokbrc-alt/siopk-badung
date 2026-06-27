@@ -8,7 +8,8 @@ use Illuminate\Support\Facades\Log;
 
 class FonnteHealthCheck extends Command
 {
-    protected $signature   = 'siopk:fonnte-check';
+    protected $signature = 'siopk:fonnte-check';
+
     protected $description = 'Cek apakah device Fonnte masih connected';
 
     public function handle(): int
@@ -17,6 +18,7 @@ class FonnteHealthCheck extends Command
 
         if (empty($token)) {
             $this->warn('FONNTE_TOKEN belum diset. Lewati.');
+
             return self::SUCCESS;
         }
 
@@ -32,21 +34,22 @@ class FonnteHealthCheck extends Command
 
                 if ($status === 'connected' || $status === true) {
                     $this->info('Fonnte device: CONNECTED');
+
                     return self::SUCCESS;
                 }
 
                 Log::warning('Fonnte device not fully connected', $data);
-                $this->warn('Fonnte device: ' . ($status ?: 'unknown status'));
+                $this->warn('Fonnte device: '.($status ?: 'unknown status'));
             } else {
                 Log::error('Fonnte health check failed', [
                     'status' => $response->status(),
-                    'body'   => $response->body(),
+                    'body' => $response->body(),
                 ]);
                 $this->error('Fonnte health check FAILED');
             }
         } catch (\Exception $e) {
             Log::error('Fonnte health check exception', ['message' => $e->getMessage()]);
-            $this->error('Fonnte health check error: ' . $e->getMessage());
+            $this->error('Fonnte health check error: '.$e->getMessage());
         }
 
         return self::SUCCESS;

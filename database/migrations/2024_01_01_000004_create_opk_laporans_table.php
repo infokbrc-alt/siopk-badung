@@ -22,7 +22,7 @@ return new class extends Migration
                 'sudah_didata_dinas',
                 'sk_kabupaten',
                 'sk_provinsi',
-                'wbtb_nasional'
+                'wbtb_nasional',
             ])->default('belum_terdaftar');
             $table->enum('kondisi', ['baik', 'waspada', 'kritis'])->default('baik');
 
@@ -49,14 +49,14 @@ return new class extends Migration
                 'rutin_tahunan',
                 'langka',
                 'sangat_langka',
-                'tidak_ada'
+                'tidak_ada',
             ])->nullable();
             $table->enum('status_kepemilikan', [
                 'desa_adat',
                 'pura_keagamaan',
                 'pribadi_keluarga',
                 'negara_pemerintah',
-                'tidak_jelas'
+                'tidak_jelas',
             ])->nullable();
 
             // === PRAKTISI (OPSIONAL) ===
@@ -66,7 +66,7 @@ return new class extends Migration
 
             // === DATA PELAPOR ===
             $table->enum('tipe_pelapor', ['masyarakat', 'tokoh_adat', 'petugas_dinas'])
-                  ->default('masyarakat');
+                ->default('masyarakat');
             $table->string('pelapor_nama', 150);
             $table->string('pelapor_nik', 20);
             $table->string('pelapor_whatsapp', 20);
@@ -79,7 +79,7 @@ return new class extends Migration
                 'review_dinas', // menunggu verifikator
                 'disetujui',    // masuk database resmi
                 'ditolak',      // ditolak
-                'duplikat'      // duplikat
+                'duplikat',      // duplikat
             ])->default('menunggu');
 
             $table->foreignId('diverifikasi_oleh')->nullable()->constrained('users');

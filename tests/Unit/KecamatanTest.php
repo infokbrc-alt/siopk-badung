@@ -2,9 +2,10 @@
 
 namespace Tests\Unit;
 
-use App\Models\Kecamatan;
-use App\Models\DesaDinas;
 use App\Models\DesaAdat;
+use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -39,7 +40,7 @@ class KecamatanTest extends TestCase
     public function test_laporans_relation(): void
     {
         $this->assertInstanceOf(
-            \Illuminate\Database\Eloquent\Relations\HasMany::class,
+            HasMany::class,
             $this->kecamatan->laporans()
         );
     }

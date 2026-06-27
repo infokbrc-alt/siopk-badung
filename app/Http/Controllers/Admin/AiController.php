@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\CacheKeys;
+use App\Http\Controllers\Controller;
 use App\Jobs\AnalisisOpkJob;
 use App\Models\OpkLaporan;
-use App\Services\{AiOpkAnalyzer, OpkStatsService};
+use App\Services\AiOpkAnalyzer;
+use App\Services\OpkStatsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -45,8 +46,8 @@ class AiController extends Controller
         // Reset status dulu
         $laporan->update([
             'status_verifikasi' => 'ai_review',
-            'ai_urgency_score'  => null,
-            'ai_rekomendasi'    => null,
+            'ai_urgency_score' => null,
+            'ai_rekomendasi' => null,
             'ai_duplikat_score' => null,
         ]);
 
@@ -65,15 +66,15 @@ class AiController extends Controller
 
         if ($cached) {
             return response()->json([
-                'success'   => true,
+                'success' => true,
                 'ringkasan' => $cached['text'],
-                'provider'  => $cached['provider'],
+                'provider' => $cached['provider'],
                 'cached_at' => $cached['cached_at'],
-                'from_cache'=> true,
+                'from_cache' => true,
             ]);
         }
 
-        $stats  = $this->statsService->ringkasanEksekutif();
+        $stats = $this->statsService->ringkasanEksekutif();
         $result = $this->ai->ringkasanEksekutif($stats);
 
         $provider = config('services.ai.provider', 'AI');
@@ -83,22 +84,22 @@ class AiController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => "AI gagal merespons. Pastikan API key provider \"{$provider}\" sudah diisi di .env.\nCek storage/logs/laravel.log untuk detail error.",
-                'provider'=> $providerLabel,
+                'provider' => $providerLabel,
             ]);
         }
 
         Cache::put(CacheKeys::RINGKASAN_EKSEKUTIF, [
-            'text'       => $result,
-            'provider'   => $providerLabel,
-            'cached_at'  => now()->isoFormat('D MMM Y, HH:mm'),
+            'text' => $result,
+            'provider' => $providerLabel,
+            'cached_at' => now()->isoFormat('D MMM Y, HH:mm'),
         ], 21600);
 
         return response()->json([
-            'success'   => true,
+            'success' => true,
             'ringkasan' => $result,
-            'provider'  => $providerLabel,
+            'provider' => $providerLabel,
             'cached_at' => now()->isoFormat('D MMM Y, HH:mm'),
-            'from_cache'=> false,
+            'from_cache' => false,
         ]);
     }
 
@@ -108,6 +109,7 @@ class AiController extends Controller
     public function clearRingkasanCache()
     {
         Cache::forget(CacheKeys::RINGKASAN_EKSEKUTIF);
+
         return back()->with('success', 'Cache ringkasan eksekutif dihapus. AI akan generate ulang saat diminta.');
     }
 
@@ -117,8 +119,8 @@ class AiController extends Controller
     public function klasifikasi(Request $request)
     {
         $request->validate([
-            'nama_opk'   => 'required|string|max:200',
-            'deskripsi'  => 'required|string|min:20',
+            'nama_opk' => 'required|string|max:200',
+            'deskripsi' => 'required|string|min:20',
         ]);
 
         $nomorKategori = $this->ai->klasifikasiOtomatis(
@@ -127,8 +129,8 @@ class AiController extends Controller
         );
 
         return response()->json([
-            'success'         => true,
-            'nomor_kategori'  => $nomorKategori,
+            'success' => true,
+            'nomor_kategori' => $nomorKategori,
         ]);
     }
 }

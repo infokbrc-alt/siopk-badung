@@ -2,25 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendWhatsAppNotifJob;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class FonnteWebhookController extends Controller
 {
-    public function deviceStatus(Request $request): \Illuminate\Http\JsonResponse
+    public function deviceStatus(Request $request): JsonResponse
     {
         $data = $request->all();
 
         Log::warning('Fonnte device status changed', $data);
 
         $deviceName = $data['device'] ?? 'unknown';
-        $status     = $data['status'] ?? 'unknown';
+        $status = $data['status'] ?? 'unknown';
 
         if ($status === 'disconnected') {
             Log::error("FONNTE DEVICE DISCONNECTED: {$deviceName}");
 
             if (config('services.whatsapp.admin_wa')) {
-                \App\Jobs\SendWhatsAppNotifJob::dispatch(
+                SendWhatsAppNotifJob::dispatch(
                     'laporan_diterima', // reuse notif type, just for alerting admin
                     config('services.whatsapp.admin_wa'),
                     'FONNTE-DEVICE',
@@ -32,9 +34,10 @@ class FonnteWebhookController extends Controller
         return response()->json(['status' => 'ok']);
     }
 
-    public function incomingMessage(Request $request): \Illuminate\Http\JsonResponse
+    public function incomingMessage(Request $request): JsonResponse
     {
         Log::info('Fonnte incoming message', $request->all());
+
         return response()->json(['status' => 'ok']);
     }
 }

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,6 +15,7 @@ class AdminVerifikasiTest extends TestCase
     use RefreshDatabase;
 
     private User $verifikator;
+
     private OpkLaporan $laporan;
 
     protected function setUp(): void
@@ -51,14 +52,14 @@ class AdminVerifikasiTest extends TestCase
 
     public function test_verifikasi_show_page_loads(): void
     {
-        $response = $this->actingAs($this->verifikator)->get('/admin/verifikasi/' . $this->laporan->id);
+        $response = $this->actingAs($this->verifikator)->get('/admin/verifikasi/'.$this->laporan->id);
         $response->assertSuccessful();
     }
 
     public function test_setujui_laporan_changes_status(): void
     {
         $response = $this->actingAs($this->verifikator)
-            ->post('/admin/verifikasi/' . $this->laporan->id . '/setujui');
+            ->post('/admin/verifikasi/'.$this->laporan->id.'/setujui');
 
         $response->assertRedirect();
         $this->assertDatabaseHas('opk_laporans', [
@@ -70,7 +71,7 @@ class AdminVerifikasiTest extends TestCase
     public function test_tolak_laporan_changes_status(): void
     {
         $response = $this->actingAs($this->verifikator)
-            ->post('/admin/verifikasi/' . $this->laporan->id . '/tolak', [
+            ->post('/admin/verifikasi/'.$this->laporan->id.'/tolak', [
                 'alasan' => 'tidak_valid',
                 'catatan' => 'Perbaiki deskripsi',
             ]);

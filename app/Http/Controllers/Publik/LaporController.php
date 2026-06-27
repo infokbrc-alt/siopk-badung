@@ -2,15 +2,21 @@
 
 namespace App\Http\Controllers\Publik;
 
+use App\Events\LaporanCreated;
+use App\Helpers\CacheKeys;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLaporanRequest;
-use App\Helpers\CacheKeys;
 use App\Jobs\AnalisisOpkJob;
-use App\Events\LaporanCreated;
-use App\Models\{OpkLaporan, OpkCategory, Kecamatan, DesaDinas, DesaAdat};
+use App\Models\DesaAdat;
+use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Services\LaporanService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\{Cache, DB, Log};
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class LaporController extends Controller
 {
@@ -21,8 +27,9 @@ class LaporController extends Controller
     // Halaman form laporan publik
     public function index()
     {
-        $kategori   = Cache::remember(CacheKeys::KATEGORI_LIST, 86400, fn() => OpkCategory::orderBy('nomor')->get());
-        $kecamatans = Cache::remember(CacheKeys::KECAMATAN_LIST, 86400, fn() => Kecamatan::orderBy('nama')->get());
+        $kategori = Cache::remember(CacheKeys::KATEGORI_LIST, 86400, fn () => OpkCategory::orderBy('nomor')->get());
+        $kecamatans = Cache::remember(CacheKeys::KECAMATAN_LIST, 86400, fn () => Kecamatan::orderBy('nama')->get());
+
         return view('publik.lapor', compact('kategori', 'kecamatans'));
     }
 
@@ -31,8 +38,9 @@ class LaporController extends Controller
     {
         $request->validate(['kecamatan_id' => 'required|exists:kecamatans,id']);
         $desa = DesaDinas::where('kecamatan_id', $request->kecamatan_id)
-                         ->orderBy('nama')
-                         ->get(['id', 'nama']);
+            ->orderBy('nama')
+            ->get(['id', 'nama']);
+
         return response()->json($desa);
     }
 
@@ -41,8 +49,9 @@ class LaporController extends Controller
     {
         $request->validate(['kecamatan_id' => 'required|exists:kecamatans,id']);
         $desa = DesaAdat::where('kecamatan_id', $request->kecamatan_id)
-                        ->orderBy('nama')
-                        ->get(['id', 'nama']);
+            ->orderBy('nama')
+            ->get(['id', 'nama']);
+
         return response()->json($desa);
     }
 
@@ -75,11 +84,12 @@ class LaporController extends Controller
             LaporanCreated::dispatch($laporan);
 
             return redirect()->route('publik.lapor.sukses', ['kode' => $laporan->kode_laporan])
-                             ->with('success', 'Laporan berhasil dikirim!');
+                ->with('success', 'Laporan berhasil dikirim!');
 
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Gagal menyimpan laporan OPK', ['error' => $e->getMessage()]);
+
             return back()->with('error', 'Terjadi kesalahan saat menyimpan laporan. Silakan coba lagi.')->withInput();
         }
     }
@@ -87,20 +97,22 @@ class LaporController extends Controller
     // Halaman sukses setelah kirim laporan
     public function sukses(Request $request)
     {
-        $kode    = $request->kode;
+        $kode = $request->kode;
         $laporan = OpkLaporan::with(['kategori', 'kecamatan'])->where('kode_laporan', $kode)->firstOrFail();
+
         return view('publik.lapor-sukses', compact('laporan'));
     }
 
     // Cek status laporan oleh pelapor
     public function cekStatus(Request $request)
     {
-        $kode    = $request->kode_laporan;
+        $kode = $request->kode_laporan;
         $laporan = null;
         if ($kode) {
             $laporan = OpkLaporan::with(['kategori', 'kecamatan', 'desaDinas', 'riwayat.user'])
                 ->where('kode_laporan', $kode)->first();
         }
+
         return view('publik.cek-status', compact('laporan', 'kode'));
     }
 }

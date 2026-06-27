@@ -13,7 +13,7 @@ class DesaDinasController extends Controller
     {
         $validated = $request->validate([
             'kecamatan_id' => 'required|exists:kecamatans,id',
-            'nama'         => 'required|string|max:100',
+            'nama' => 'required|string|max:100',
         ]);
 
         DesaDinas::create($validated);

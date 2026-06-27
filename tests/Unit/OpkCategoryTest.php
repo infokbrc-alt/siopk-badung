@@ -2,10 +2,11 @@
 
 namespace Tests\Unit;
 
+use App\Models\DesaDinas;
+use App\Models\Kecamatan;
 use App\Models\OpkCategory;
 use App\Models\OpkLaporan;
-use App\Models\Kecamatan;
-use App\Models\DesaDinas;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -47,7 +48,7 @@ class OpkCategoryTest extends TestCase
 
     public function test_nomor_is_unique(): void
     {
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         OpkCategory::create(['nomor' => 1, 'nama' => 'Duplikat', 'ikon' => '📦']);
     }
 }

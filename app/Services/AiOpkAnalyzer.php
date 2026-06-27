@@ -3,20 +3,20 @@
 namespace App\Services;
 
 use App\Models\OpkLaporan;
-use App\Services\Ai\{AiProviderInterface, AiProviderFactory};
-use Illuminate\Support\Facades\Log;
+use App\Services\Ai\AiProviderFactory;
+use App\Services\Ai\AiProviderInterface;
 
 /**
  * AiOpkAnalyzer
- * 
+ *
  * Multi-provider AI service (Claude, OpenAI, DeepSeek, Groq, Custom).
- * 
+ *
  * Konfigurasi via .env:
  *   AI_PROVIDER=claude|openai|deepseek|groq|custom
  *   <PROVIDER>_API_KEY=...
  *   <PROVIDER>_API_URL=...  (opsional, ada default)
  *   <PROVIDER>_MODEL=...    (opsional, ada default)
- * 
+ *
  * Custom provider bisa pakai format Claude atau OpenAI (CUSTOM_AI_TYPE).
  */
 class AiOpkAnalyzer
@@ -41,7 +41,7 @@ class AiOpkAnalyzer
             ->latest()
             ->limit(5)
             ->get(['id', 'nama_opk', 'kondisi', 'nama_desa_adat', 'kategori_id'])
-            ->map(fn($l) => "- [{$l->id}] " . $this->sanitize($l->nama_opk) . " (" . $this->sanitize($l->nama_desa_adat) . ", kondisi: {$l->kondisi})")
+            ->map(fn ($l) => "- [{$l->id}] ".$this->sanitize($l->nama_opk).' ('.$this->sanitize($l->nama_desa_adat).", kondisi: {$l->kondisi})")
             ->implode("\n");
 
         $prompt = <<<PROMPT
@@ -85,18 +85,18 @@ PROMPT;
 
         $result = $this->callApi($prompt);
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->defaultAnalysis($laporan);
         }
 
         $data = $this->parseJson($result['content']);
 
         return [
-            'urgency_score'    => min(10, max(0, (float)($data['urgency_score'] ?? 5.0))),
-            'duplikat_score'   => min(100, max(0, (float)($data['duplikat_score'] ?? 0))),
-            'duplikat_id'      => $data['duplikat_id'] ?? null,
-            'rekomendasi'      => $data['rekomendasi'] ?? 'Perlu verifikasi lapangan.',
-            'alasan_urgensi'   => $data['alasan_urgensi'] ?? '',
+            'urgency_score' => min(10, max(0, (float) ($data['urgency_score'] ?? 5.0))),
+            'duplikat_score' => min(100, max(0, (float) ($data['duplikat_score'] ?? 0))),
+            'duplikat_id' => $data['duplikat_id'] ?? null,
+            'rekomendasi' => $data['rekomendasi'] ?? 'Perlu verifikasi lapangan.',
+            'alasan_urgensi' => $data['alasan_urgensi'] ?? '',
             'saran_verifikasi' => $data['saran_verifikasi'] ?? '',
         ];
     }
@@ -126,7 +126,9 @@ Jawab HANYA dengan angka desimal 0–100 (contoh: 75.5), tanpa penjelasan.
 PROMPT;
 
         $result = $this->callApi($prompt, 50);
-        if (!$result['success']) return 0.0;
+        if (! $result['success']) {
+            return 0.0;
+        }
 
         return min(100, max(0, (float) trim($result['content'])));
     }
@@ -163,6 +165,7 @@ Maksimal 200 kata, nada formal dan faktual. JANGAN gunakan formatting markdown (
 PROMPT;
 
         $result = $this->callApi($prompt, 600);
+
         return $result['success'] ? $result['content'] : 'Ringkasan tidak tersedia.';
     }
 
@@ -193,9 +196,12 @@ Jawab HANYA dengan angka 1–10, tanpa penjelasan.
 PROMPT;
 
         $result = $this->callApi($prompt, 10);
-        if (!$result['success']) return null;
+        if (! $result['success']) {
+            return null;
+        }
 
         $num = (int) trim($result['content']);
+
         return ($num >= 1 && $num <= 10) ? $num : null;
     }
 
@@ -223,6 +229,7 @@ Jawab dalam Bahasa Indonesia, profesional, maksimal 150 kata.
 PROMPT;
 
         $result = $this->callApi($prompt, 400);
+
         return $result['success'] ? $result['content'] : 'Maaf, asisten AI tidak tersedia saat ini.';
     }
 
@@ -235,6 +242,7 @@ PROMPT;
             return '';
         }
         $cleaned = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $input);
+
         return mb_substr(trim($cleaned), 0, 2000);
     }
 
@@ -252,15 +260,16 @@ PROMPT;
         $clean = trim($clean);
 
         $data = json_decode($clean, true);
+
         return is_array($data) ? $data : [];
     }
 
     private function defaultAnalysis(OpkLaporan $laporan): array
     {
-        $score = match($laporan->kondisi) {
-            'kritis'  => 7.5,
+        $score = match ($laporan->kondisi) {
+            'kritis' => 7.5,
             'waspada' => 4.5,
-            default   => 2.0,
+            default => 2.0,
         };
 
         if ($laporan->praktisi_usia && $laporan->praktisi_usia > 60) {
@@ -268,11 +277,11 @@ PROMPT;
         }
 
         return [
-            'urgency_score'    => $score,
-            'duplikat_score'   => 0.0,
-            'duplikat_id'      => null,
-            'rekomendasi'      => "OPK dengan kondisi {$laporan->kondisi} di {$this->sanitize($laporan->nama_desa_adat)}. Perlu verifikasi lapangan oleh tim Dinas Kebudayaan.",
-            'alasan_urgensi'   => "Dihitung berdasarkan kondisi OPK ({$laporan->kondisi}) secara otomatis.",
+            'urgency_score' => $score,
+            'duplikat_score' => 0.0,
+            'duplikat_id' => null,
+            'rekomendasi' => "OPK dengan kondisi {$laporan->kondisi} di {$this->sanitize($laporan->nama_desa_adat)}. Perlu verifikasi lapangan oleh tim Dinas Kebudayaan.",
+            'alasan_urgensi' => "Dihitung berdasarkan kondisi OPK ({$laporan->kondisi}) secara otomatis.",
             'saran_verifikasi' => 'Lakukan kunjungan lapangan untuk memvalidasi data.',
         ];
     }

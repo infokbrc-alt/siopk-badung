@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
+use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
 use App\Models\OpkDokumen;
 use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
-use App\Models\DesaDinas;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

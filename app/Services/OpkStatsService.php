@@ -2,7 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\{OpkLaporan, OpkCategory, Kecamatan};
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class OpkStatsService
@@ -23,11 +26,11 @@ class OpkStatsService
             ->first();
 
         return [
-            'total_opk'   => (int) ($row->total_opk ?? 0),
-            'kritis'      => (int) ($row->kritis ?? 0),
-            'menunggu'    => (int) ($row->menunggu ?? 0),
+            'total_opk' => (int) ($row->total_opk ?? 0),
+            'kritis' => (int) ($row->kritis ?? 0),
+            'menunggu' => (int) ($row->menunggu ?? 0),
             'terlindungi' => (int) ($row->terlindungi ?? 0),
-            'bulan_ini'   => (int) ($row->bulan_ini ?? 0),
+            'bulan_ini' => (int) ($row->bulan_ini ?? 0),
         ];
     }
 
@@ -43,10 +46,10 @@ class OpkStatsService
             ->first();
 
         return [
-            'total'   => (int) ($row->total ?? 0),
-            'kritis'  => (int) ($row->kritis ?? 0),
+            'total' => (int) ($row->total ?? 0),
+            'kritis' => (int) ($row->kritis ?? 0),
             'waspada' => (int) ($row->waspada ?? 0),
-            'baik'    => (int) ($row->baik ?? 0),
+            'baik' => (int) ($row->baik ?? 0),
         ];
     }
 
@@ -68,13 +71,13 @@ class OpkStatsService
             ->first();
 
         return [
-            'total'     => (int) ($row->disetujui ?? 0),
-            'kritis'    => (int) ($row->kritis ?? 0),
-            'waspada'   => (int) ($row->waspada ?? 0),
-            'baik'      => (int) ($row->baik ?? 0),
+            'total' => (int) ($row->disetujui ?? 0),
+            'kritis' => (int) ($row->kritis ?? 0),
+            'waspada' => (int) ($row->waspada ?? 0),
+            'baik' => (int) ($row->baik ?? 0),
             'disetujui' => (int) ($row->disetujui ?? 0),
-            'ditolak'   => (int) ($row->ditolak ?? 0),
-            'menunggu'  => (int) ($row->menunggu ?? 0),
+            'ditolak' => (int) ($row->ditolak ?? 0),
+            'menunggu' => (int) ($row->menunggu ?? 0),
             'bulan_ini' => (int) ($row->bulan_ini ?? 0),
         ];
     }
@@ -102,33 +105,33 @@ class OpkStatsService
             ->orderByDesc('ai_urgency_score')
             ->limit(5)
             ->get()
-            ->map(fn($o) => "- {$o->nama_opk} (Kec. {$o->kecamatan?->nama}, score: " . number_format($o->ai_urgency_score ?? 0, 1) . ")")
+            ->map(fn ($o) => "- {$o->nama_opk} (Kec. {$o->kecamatan?->nama}, score: ".number_format($o->ai_urgency_score ?? 0, 1).')')
             ->implode("\n");
 
         return [
-            'total_opk'       => (int) ($row->total_opk ?? 0),
-            'laporan_baru'    => (int) ($row->laporan_baru ?? 0),
-            'kritis'          => (int) ($row->kritis ?? 0),
-            'waspada'         => (int) ($row->waspada ?? 0),
-            'disetujui'       => (int) ($row->disetujui_7hari ?? 0),
-            'ditolak'         => (int) ($row->ditolak_7hari ?? 0),
-            'menunggu'        => (int) ($row->menunggu ?? 0),
-            'prioritas_tinggi'=> (int) ($row->prioritas_tinggi ?? 0),
+            'total_opk' => (int) ($row->total_opk ?? 0),
+            'laporan_baru' => (int) ($row->laporan_baru ?? 0),
+            'kritis' => (int) ($row->kritis ?? 0),
+            'waspada' => (int) ($row->waspada ?? 0),
+            'disetujui' => (int) ($row->disetujui_7hari ?? 0),
+            'ditolak' => (int) ($row->ditolak_7hari ?? 0),
+            'menunggu' => (int) ($row->menunggu ?? 0),
+            'prioritas_tinggi' => (int) ($row->prioritas_tinggi ?? 0),
             'opk_kritis_list' => $kritis ?: '(Tidak ada OPK kritis)',
         ];
     }
 
-    public function kategoriWithOpkCount(): \Illuminate\Database\Eloquent\Collection
+    public function kategoriWithOpkCount(): Collection
     {
         return OpkCategory::withCount([
-            'laporans as total' => fn($q) => $q->disetujui()
+            'laporans as total' => fn ($q) => $q->disetujui(),
         ])->orderByDesc('total')->get();
     }
 
-    public function kecamatanWithOpkCount(): \Illuminate\Database\Eloquent\Collection
+    public function kecamatanWithOpkCount(): Collection
     {
         return Kecamatan::withCount([
-            'laporans as total' => fn($q) => $q->disetujui()
+            'laporans as total' => fn ($q) => $q->disetujui(),
         ])->orderByDesc('total')->get();
     }
 }

@@ -3,9 +3,9 @@
 namespace Tests\Unit;
 
 use App\Models\DesaDinas;
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
 use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -24,25 +24,25 @@ class OpkLaporanTest extends TestCase
         DesaDinas::create(['nama' => 'Jimbaran', 'kecamatan_id' => $kecamatan->id]);
 
         $this->laporan = OpkLaporan::create([
-            'kode_laporan'       => 'SIOPK-2025-00001',
-            'nama_opk'           => 'Tari Barong',
-            'kategori_id'        => 1,
-            'kondisi'            => 'baik',
-            'kecamatan_id'       => 1,
-            'desa_dinas_id'      => 1,
-            'nama_desa_adat'     => 'Desa Adat Jimbaran',
-            'deskripsi_umum'     => 'Tarian sakral Bali',
-            'status_verifikasi'  => 'disetujui',
-            'pelapor_nama'       => 'Test User',
-            'pelapor_nik'        => '1234567890123456',
-            'pelapor_whatsapp'   => '08123456789',
+            'kode_laporan' => 'SIOPK-2025-00001',
+            'nama_opk' => 'Tari Barong',
+            'kategori_id' => 1,
+            'kondisi' => 'baik',
+            'kecamatan_id' => 1,
+            'desa_dinas_id' => 1,
+            'nama_desa_adat' => 'Desa Adat Jimbaran',
+            'deskripsi_umum' => 'Tarian sakral Bali',
+            'status_verifikasi' => 'disetujui',
+            'pelapor_nama' => 'Test User',
+            'pelapor_nik' => '1234567890123456',
+            'pelapor_whatsapp' => '08123456789',
         ]);
     }
 
     public function test_generate_kode_returns_valid_format(): void
     {
         $kode = OpkLaporan::generateKode();
-        $this->assertStringStartsWith('SIOPK-' . date('Y') . '-', $kode);
+        $this->assertStringStartsWith('SIOPK-'.date('Y').'-', $kode);
     }
 
     public function test_status_badge_returns_correct_label(): void
@@ -80,18 +80,18 @@ class OpkLaporanTest extends TestCase
     public function test_scope_disetujui(): void
     {
         OpkLaporan::create([
-            'kode_laporan'       => 'SIOPK-2025-00002',
-            'nama_opk'           => 'Tari Legong',
-            'kategori_id'        => 1,
-            'kondisi'            => 'baik',
-            'kecamatan_id'       => 1,
-            'desa_dinas_id'      => 1,
-            'nama_desa_adat'     => 'Test',
-            'deskripsi_umum'     => 'Test description',
-            'status_verifikasi'  => 'menunggu',
-            'pelapor_nama'       => 'Test',
-            'pelapor_nik'        => '1234567890123457',
-            'pelapor_whatsapp'   => '08123456780',
+            'kode_laporan' => 'SIOPK-2025-00002',
+            'nama_opk' => 'Tari Legong',
+            'kategori_id' => 1,
+            'kondisi' => 'baik',
+            'kecamatan_id' => 1,
+            'desa_dinas_id' => 1,
+            'nama_desa_adat' => 'Test',
+            'deskripsi_umum' => 'Test description',
+            'status_verifikasi' => 'menunggu',
+            'pelapor_nama' => 'Test',
+            'pelapor_nik' => '1234567890123457',
+            'pelapor_whatsapp' => '08123456780',
         ]);
 
         $count = OpkLaporan::disetujui()->count();
@@ -101,18 +101,18 @@ class OpkLaporanTest extends TestCase
     public function test_scope_kritis(): void
     {
         OpkLaporan::create([
-            'kode_laporan'       => 'SIOPK-2025-00002',
-            'nama_opk'           => 'Tari Kritis',
-            'kategori_id'        => 1,
-            'kondisi'            => 'kritis',
-            'kecamatan_id'       => 1,
-            'desa_dinas_id'      => 1,
-            'nama_desa_adat'     => 'Test',
-            'deskripsi_umum'     => 'Test description',
-            'status_verifikasi'  => 'disetujui',
-            'pelapor_nama'       => 'Test',
-            'pelapor_nik'        => '1234567890123457',
-            'pelapor_whatsapp'   => '08123456780',
+            'kode_laporan' => 'SIOPK-2025-00002',
+            'nama_opk' => 'Tari Kritis',
+            'kategori_id' => 1,
+            'kondisi' => 'kritis',
+            'kecamatan_id' => 1,
+            'desa_dinas_id' => 1,
+            'nama_desa_adat' => 'Test',
+            'deskripsi_umum' => 'Test description',
+            'status_verifikasi' => 'disetujui',
+            'pelapor_nama' => 'Test',
+            'pelapor_nik' => '1234567890123457',
+            'pelapor_whatsapp' => '08123456780',
         ]);
 
         $count = OpkLaporan::kritis()->count();

@@ -6,7 +6,8 @@ use App\Services\WhatsAppService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 class SendWhatsAppNotifJob implements ShouldQueue
@@ -14,6 +15,7 @@ class SendWhatsAppNotifJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public array $backoff = [5, 30];
 
     public function __construct(
@@ -29,15 +31,15 @@ class SendWhatsAppNotifJob implements ShouldQueue
         Log::warning("SendWhatsAppNotifJob: {$this->action} ke {$this->nomorWa} untuk {$this->kodeLaporan}");
 
         match ($this->action) {
-            'laporan_diterima'   => $wa->notifikasiLaporanDiterima($this->nomorWa, $this->kodeLaporan, $this->namaOpk),
-            'laporan_disetujui'  => $wa->notifikasiLaporanDisetujui($this->nomorWa, $this->kodeLaporan, $this->namaOpk),
-            'laporan_ditolak'    => $wa->notifikasiLaporanDitolak($this->nomorWa, $this->kodeLaporan, $this->namaOpk, $this->catatan),
+            'laporan_diterima' => $wa->notifikasiLaporanDiterima($this->nomorWa, $this->kodeLaporan, $this->namaOpk),
+            'laporan_disetujui' => $wa->notifikasiLaporanDisetujui($this->nomorWa, $this->kodeLaporan, $this->namaOpk),
+            'laporan_ditolak' => $wa->notifikasiLaporanDitolak($this->nomorWa, $this->kodeLaporan, $this->namaOpk, $this->catatan),
             default => Log::warning("SendWhatsAppNotifJob: action tidak dikenal '{$this->action}'"),
         };
     }
 
     public function failed(\Throwable $e): void
     {
-        Log::warning("SendWhatsAppNotifJob FAILED action {$this->action}: " . $e->getMessage());
+        Log::warning("SendWhatsAppNotifJob FAILED action {$this->action}: ".$e->getMessage());
     }
 }

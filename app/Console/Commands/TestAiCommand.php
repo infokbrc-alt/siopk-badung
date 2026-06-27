@@ -2,12 +2,17 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Services\AiOpkAnalyzer;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class TestAiCommand extends Command
 {
-    protected $signature   = 'siopk:test-ai';
+    protected $signature = 'siopk:test-ai';
+
     protected $description = 'Test koneksi ke Claude API dan coba analisis OPK sederhana';
 
     public function handle(AiOpkAnalyzer $ai): int
@@ -23,9 +28,10 @@ class TestAiCommand extends Command
         if (empty($apiKey)) {
             $this->error('✗ CLAUDE_API_KEY belum diset di .env!');
             $this->line('  Tambahkan: CLAUDE_API_KEY=sk-ant-api03-xxxxx');
+
             return self::FAILURE;
         }
-        $this->info('✓ CLAUDE_API_KEY terdeteksi: ' . substr($apiKey, 0, 20) . '...');
+        $this->info('✓ CLAUDE_API_KEY terdeteksi: '.substr($apiKey, 0, 20).'...');
 
         // 2. Test klasifikasi sederhana
         $this->info('');
@@ -45,29 +51,29 @@ class TestAiCommand extends Command
         $this->info('');
         $this->info('Menguji analisis laporan dummy...');
 
-        $laporan = new \App\Models\OpkLaporan([
-            'nama_opk'         => 'Lontar Usada Desa Pedawa',
-            'kondisi'          => 'kritis',
-            'nama_desa_adat'   => 'Desa Adat Pedawa',
-            'deskripsi_umum'   => 'Naskah lontar berisi ilmu pengobatan tradisional Bali. Kondisi rusak berat, belum ada digitalisasi.',
-            'praktisi_nama'    => 'Jro Mangku Sari',
-            'praktisi_usia'    => 78,
+        $laporan = new OpkLaporan([
+            'nama_opk' => 'Lontar Usada Desa Pedawa',
+            'kondisi' => 'kritis',
+            'nama_desa_adat' => 'Desa Adat Pedawa',
+            'deskripsi_umum' => 'Naskah lontar berisi ilmu pengobatan tradisional Bali. Kondisi rusak berat, belum ada digitalisasi.',
+            'praktisi_nama' => 'Jro Mangku Sari',
+            'praktisi_usia' => 78,
             'frekuensi_pelaksanaan' => 'sangat_langka',
         ]);
 
         // Mock relasi
-        $laporan->setRelation('kategori', new \App\Models\OpkCategory(['nama' => 'Manuskrip']));
-        $laporan->setRelation('kecamatan', new \App\Models\Kecamatan(['nama' => 'Petang']));
+        $laporan->setRelation('kategori', new OpkCategory(['nama' => 'Manuskrip']));
+        $laporan->setRelation('kecamatan', new Kecamatan(['nama' => 'Petang']));
 
         $hasil = $ai->analisisLaporan($laporan);
 
-        $this->info("✓ Analisis berhasil!");
+        $this->info('✓ Analisis berhasil!');
         $this->table(
             ['Field', 'Nilai'],
             [
-                ['Urgency Score',  number_format($hasil['urgency_score'], 1) . '/10'],
-                ['Duplikat Score', number_format($hasil['duplikat_score'], 1) . '%'],
-                ['Rekomendasi',    \Illuminate\Support\Str::limit($hasil['rekomendasi'], 80)],
+                ['Urgency Score',  number_format($hasil['urgency_score'], 1).'/10'],
+                ['Duplikat Score', number_format($hasil['duplikat_score'], 1).'%'],
+                ['Rekomendasi',    Str::limit($hasil['rekomendasi'], 80)],
             ]
         );
 

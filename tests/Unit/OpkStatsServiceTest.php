@@ -2,10 +2,10 @@
 
 namespace Tests\Unit;
 
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Services\OpkStatsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -69,7 +69,7 @@ class OpkStatsServiceTest extends TestCase
             'pelapor_whatsapp' => '08123456781',
         ]);
 
-        $this->service = new OpkStatsService();
+        $this->service = new OpkStatsService;
     }
 
     public function test_dashboard_admin_returns_correct_counts(): void

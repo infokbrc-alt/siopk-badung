@@ -21,6 +21,7 @@ class UserPolicy
         if ($target->isSuperAdmin() && $user->id !== $target->id) {
             return false;
         }
+
         return $user->isAdmin();
     }
 
@@ -29,6 +30,7 @@ class UserPolicy
         if ($user->id === $target->id || $target->isSuperAdmin()) {
             return false;
         }
+
         return $user->isAdmin();
     }
 
@@ -37,6 +39,7 @@ class UserPolicy
         if ($user->id === $target->id) {
             return false;
         }
+
         return $user->isAdmin();
     }
 }

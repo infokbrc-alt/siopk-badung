@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Kecamatan extends Model
 {
     protected $table = 'kecamatans';
+
     protected $fillable = ['nama', 'kode'];
 
     public function desaDinas()

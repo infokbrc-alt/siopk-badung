@@ -2,7 +2,8 @@
 
 namespace App\Models;
 
-use App\Enums\{StatusVerifikasi, KondisiOpk};
+use App\Enums\KondisiOpk;
+use App\Enums\StatusVerifikasi;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
@@ -30,11 +31,11 @@ class OpkLaporan extends Model
     ];
 
     protected $casts = [
-        'latitude'           => 'float',
-        'longitude'          => 'float',
-        'ai_urgency_score'   => 'float',
-        'ai_duplikat_score'  => 'float',
-        'tahun_diketahui'    => 'integer',
+        'latitude' => 'float',
+        'longitude' => 'float',
+        'ai_urgency_score' => 'float',
+        'ai_duplikat_score' => 'float',
+        'tahun_diketahui' => 'integer',
         'tanggal_verifikasi' => 'datetime',
     ];
 
@@ -45,51 +46,108 @@ class OpkLaporan extends Model
     ];
 
     // ---- Relasi ----
-    public function kategori()    { return $this->belongsTo(OpkCategory::class, 'kategori_id'); }
-    public function kecamatan()   { return $this->belongsTo(Kecamatan::class, 'kecamatan_id'); }
-    public function desaDinas()   { return $this->belongsTo(DesaDinas::class, 'desa_dinas_id'); }
-    public function verifikator() { return $this->belongsTo(User::class, 'diverifikasi_oleh'); }
-    public function duplikatDari(){ return $this->belongsTo(OpkLaporan::class, 'ai_duplikat_of'); }
+    public function kategori()
+    {
+        return $this->belongsTo(OpkCategory::class, 'kategori_id');
+    }
 
-    public function fotos()     { return $this->hasMany(OpkFoto::class, 'laporan_id')->orderBy('urutan'); }
-    public function fotoUtama() { return $this->hasOne(OpkFoto::class, 'laporan_id')->where('is_utama', true); }
-    public function dokumens()  { return $this->hasMany(OpkDokumen::class, 'laporan_id'); }
-    public function videos()    { return $this->hasMany(OpkVideo::class, 'laporan_id'); }
-    public function riwayat()   { return $this->hasMany(OpkRiwayatStatus::class, 'laporan_id')->latest(); }
+    public function kecamatan()
+    {
+        return $this->belongsTo(Kecamatan::class, 'kecamatan_id');
+    }
+
+    public function desaDinas()
+    {
+        return $this->belongsTo(DesaDinas::class, 'desa_dinas_id');
+    }
+
+    public function verifikator()
+    {
+        return $this->belongsTo(User::class, 'diverifikasi_oleh');
+    }
+
+    public function duplikatDari()
+    {
+        return $this->belongsTo(OpkLaporan::class, 'ai_duplikat_of');
+    }
+
+    public function fotos()
+    {
+        return $this->hasMany(OpkFoto::class, 'laporan_id')->orderBy('urutan');
+    }
+
+    public function fotoUtama()
+    {
+        return $this->hasOne(OpkFoto::class, 'laporan_id')->where('is_utama', true);
+    }
+
+    public function dokumens()
+    {
+        return $this->hasMany(OpkDokumen::class, 'laporan_id');
+    }
+
+    public function videos()
+    {
+        return $this->hasMany(OpkVideo::class, 'laporan_id');
+    }
+
+    public function riwayat()
+    {
+        return $this->hasMany(OpkRiwayatStatus::class, 'laporan_id')->latest();
+    }
 
     // ---- Helpers ----
     public static function generateKode(): string
     {
-        return 'SIOPK-' . date('Y') . '-' . Str::upper(Str::random(8));
+        return 'SIOPK-'.date('Y').'-'.Str::upper(Str::random(8));
     }
 
     // ---- Scopes ----
-    public function scopeDisetujui($query)    { return $query->where('status_verifikasi', StatusVerifikasi::Disetujui->value); }
-    public function scopeKritis($query)       { return $query->where('kondisi', KondisiOpk::Kritis->value); }
-    public function scopeWaspada($query)      { return $query->where('kondisi', KondisiOpk::Waspada->value); }
-    public function scopeMenunggu($query)     { return $query->whereIn('status_verifikasi', [StatusVerifikasi::Menunggu->value, StatusVerifikasi::AiReview->value, StatusVerifikasi::ReviewDinas->value]); }
-    public function scopePrioritas($query)    { return $query->where('ai_urgency_score', '>=', 7); }
+    public function scopeDisetujui($query)
+    {
+        return $query->where('status_verifikasi', StatusVerifikasi::Disetujui->value);
+    }
+
+    public function scopeKritis($query)
+    {
+        return $query->where('kondisi', KondisiOpk::Kritis->value);
+    }
+
+    public function scopeWaspada($query)
+    {
+        return $query->where('kondisi', KondisiOpk::Waspada->value);
+    }
+
+    public function scopeMenunggu($query)
+    {
+        return $query->whereIn('status_verifikasi', [StatusVerifikasi::Menunggu->value, StatusVerifikasi::AiReview->value, StatusVerifikasi::ReviewDinas->value]);
+    }
+
+    public function scopePrioritas($query)
+    {
+        return $query->where('ai_urgency_score', '>=', 7);
+    }
 
     public function getStatusBadgeAttribute(): array
     {
-        return match($this->status_verifikasi) {
-            StatusVerifikasi::Menunggu->value     => ['label' => 'Menunggu',     'color' => 'secondary'],
-            StatusVerifikasi::AiReview->value     => ['label' => 'AI Review',    'color' => 'info'],
-            StatusVerifikasi::ReviewDinas->value  => ['label' => 'Review Dinas', 'color' => 'warning'],
-            StatusVerifikasi::Disetujui->value    => ['label' => 'Disetujui',    'color' => 'success'],
-            StatusVerifikasi::Ditolak->value      => ['label' => 'Ditolak',      'color' => 'danger'],
-            StatusVerifikasi::Duplikat->value     => ['label' => 'Duplikat',     'color' => 'dark'],
-            default                               => ['label' => 'Unknown',      'color' => 'secondary'],
+        return match ($this->status_verifikasi) {
+            StatusVerifikasi::Menunggu->value => ['label' => 'Menunggu',     'color' => 'secondary'],
+            StatusVerifikasi::AiReview->value => ['label' => 'AI Review',    'color' => 'info'],
+            StatusVerifikasi::ReviewDinas->value => ['label' => 'Review Dinas', 'color' => 'warning'],
+            StatusVerifikasi::Disetujui->value => ['label' => 'Disetujui',    'color' => 'success'],
+            StatusVerifikasi::Ditolak->value => ['label' => 'Ditolak',      'color' => 'danger'],
+            StatusVerifikasi::Duplikat->value => ['label' => 'Duplikat',     'color' => 'dark'],
+            default => ['label' => 'Unknown',      'color' => 'secondary'],
         };
     }
 
     public function getKondisiBadgeAttribute(): array
     {
-        return match($this->kondisi) {
-            KondisiOpk::Baik->value    => ['label' => 'Baik',    'color' => 'success'],
+        return match ($this->kondisi) {
+            KondisiOpk::Baik->value => ['label' => 'Baik',    'color' => 'success'],
             KondisiOpk::Waspada->value => ['label' => 'Waspada', 'color' => 'warning'],
-            KondisiOpk::Kritis->value  => ['label' => 'Kritis',  'color' => 'danger'],
-            default                    => ['label' => '-',        'color' => 'secondary'],
+            KondisiOpk::Kritis->value => ['label' => 'Kritis',  'color' => 'danger'],
+            default => ['label' => '-',        'color' => 'secondary'],
         };
     }
 }

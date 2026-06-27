@@ -26,8 +26,8 @@ class VerifikasiController extends Controller
         }
 
         $laporans = $query->orderByDesc('ai_urgency_score')
-                          ->orderBy('created_at')
-                          ->paginate(15);
+            ->orderBy('created_at')
+            ->paginate(15);
 
         return view('admin.verifikasi.index', compact('laporans'));
     }
@@ -36,8 +36,9 @@ class VerifikasiController extends Controller
     {
         $laporan->load([
             'kategori', 'kecamatan', 'desaDinas',
-            'fotos', 'fotoUtama', 'dokumens', 'videos', 'riwayat.user', 'duplikatDari'
+            'fotos', 'fotoUtama', 'dokumens', 'videos', 'riwayat.user', 'duplikatDari',
         ]);
+
         return view('admin.verifikasi.show', compact('laporan'));
     }
 
@@ -47,6 +48,7 @@ class VerifikasiController extends Controller
 
         try {
             $this->verifikasiService->setujuiLaporan($laporan, auth()->user(), $request->catatan);
+
             return redirect()->route('admin.verifikasi.index')
                 ->with('success', "Laporan {$laporan->kode_laporan} berhasil disetujui.");
         } catch (\Exception $e) {
@@ -58,11 +60,12 @@ class VerifikasiController extends Controller
     {
         $request->validate([
             'catatan' => 'required|string|max:500',
-            'alasan'  => 'required|in:tidak_valid,duplikat,kurang_data,diluar_wilayah,lainnya',
+            'alasan' => 'required|in:tidak_valid,duplikat,kurang_data,diluar_wilayah,lainnya',
         ]);
 
         try {
             $this->verifikasiService->tolakLaporan($laporan, auth()->user(), $request->alasan, $request->catatan);
+
             return redirect()->route('admin.verifikasi.index')
                 ->with('success', "Laporan {$laporan->kode_laporan} berhasil ditolak.");
         } catch (\Exception $e) {
@@ -73,13 +76,13 @@ class VerifikasiController extends Controller
     public function updateAiScore(Request $request, OpkLaporan $laporan)
     {
         $request->validate([
-            'ai_urgency_score'  => 'required|numeric|min:0|max:10',
-            'ai_rekomendasi'    => 'nullable|string',
+            'ai_urgency_score' => 'required|numeric|min:0|max:10',
+            'ai_rekomendasi' => 'nullable|string',
         ]);
 
         $laporan->update([
             'ai_urgency_score' => $request->ai_urgency_score,
-            'ai_rekomendasi'   => $request->ai_rekomendasi,
+            'ai_rekomendasi' => $request->ai_rekomendasi,
         ]);
 
         return back()->with('success', 'AI score diperbarui.');

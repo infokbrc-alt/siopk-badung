@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -113,7 +115,7 @@ class UserTest extends TestCase
     {
         User::factory()->create(['role' => 'admin', 'email' => 'test@example.com']);
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         User::factory()->create(['role' => 'admin', 'email' => 'test@example.com']);
     }
 
@@ -122,7 +124,7 @@ class UserTest extends TestCase
         $user = User::factory()->create(['role' => 'verifikator']);
 
         $this->assertInstanceOf(
-            \Illuminate\Database\Eloquent\Relations\HasMany::class,
+            HasMany::class,
             $user->verifikasiLaporans()
         );
     }

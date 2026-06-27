@@ -19,11 +19,11 @@ class OpkVideo extends Model
 
     public function isLocal(): bool
     {
-        return !empty($this->path);
+        return ! empty($this->path);
     }
 
     public function isExternal(): bool
     {
-        return !empty($this->link_eksternal);
+        return ! empty($this->link_eksternal);
     }
 }

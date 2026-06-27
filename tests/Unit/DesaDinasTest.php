@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\DesaDinas;
 use App\Models\Kecamatan;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -32,7 +33,7 @@ class DesaDinasTest extends TestCase
         $desa = DesaDinas::create(['nama' => 'Kuta', 'kecamatan_id' => $this->kecamatan->id]);
 
         $this->assertInstanceOf(
-            \Illuminate\Database\Eloquent\Relations\HasMany::class,
+            HasMany::class,
             $desa->laporans()
         );
     }

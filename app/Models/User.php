@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
@@ -23,17 +23,36 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'is_active'         => 'boolean',
-            'password'          => 'hashed',
+            'is_active' => 'boolean',
+            'password' => 'hashed',
         ];
     }
 
     // ---- Role helpers ----
-    public function isSuperAdmin(): bool  { return $this->role === 'superadmin'; }
-    public function isAdmin(): bool       { return in_array($this->role, ['superadmin', 'admin']); }
-    public function isVerifikator(): bool { return in_array($this->role, ['superadmin', 'admin', 'verifikator']); }
-    public function isPetugas(): bool     { return $this->role === 'petugas'; }
-    public function canVerify(): bool     { return $this->isVerifikator(); }
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'superadmin';
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array($this->role, ['superadmin', 'admin']);
+    }
+
+    public function isVerifikator(): bool
+    {
+        return in_array($this->role, ['superadmin', 'admin', 'verifikator']);
+    }
+
+    public function isPetugas(): bool
+    {
+        return $this->role === 'petugas';
+    }
+
+    public function canVerify(): bool
+    {
+        return $this->isVerifikator();
+    }
 
     // ---- Relasi ----
     public function verifikasiLaporans()

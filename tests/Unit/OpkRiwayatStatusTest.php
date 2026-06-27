@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
-use App\Models\OpkRiwayatStatus;
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
+use App\Models\OpkRiwayatStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -16,6 +16,7 @@ class OpkRiwayatStatusTest extends TestCase
     use RefreshDatabase;
 
     private OpkLaporan $laporan;
+
     private User $user;
 
     protected function setUp(): void

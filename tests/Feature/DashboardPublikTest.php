@@ -2,10 +2,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -52,7 +52,7 @@ class DashboardPublikTest extends TestCase
     public function test_opk_detail_page_loads_for_disetujui(): void
     {
         $opk = OpkLaporan::first();
-        $response = $this->get('/opk/' . $opk->id);
+        $response = $this->get('/opk/'.$opk->id);
         $response->assertSuccessful();
     }
 
@@ -61,7 +61,7 @@ class DashboardPublikTest extends TestCase
         $opk = OpkLaporan::first();
         $opk->update(['status_verifikasi' => 'menunggu']);
 
-        $response = $this->get('/opk/' . $opk->id);
+        $response = $this->get('/opk/'.$opk->id);
         $response->assertNotFound();
     }
 

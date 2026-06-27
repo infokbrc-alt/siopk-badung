@@ -7,18 +7,18 @@ class ClaudeProvider extends BaseProvider
     protected function headers(): array
     {
         return [
-            'x-api-key'         => $this->apiKey,
+            'x-api-key' => $this->apiKey,
             'anthropic-version' => '2023-06-01',
-            'content-type'      => 'application/json',
+            'content-type' => 'application/json',
         ];
     }
 
     protected function buildBody(string $prompt, int $maxTokens): array
     {
         return [
-            'model'      => $this->model,
+            'model' => $this->model,
             'max_tokens' => $maxTokens,
-            'messages'   => [
+            'messages' => [
                 ['role' => 'user', 'content' => $prompt],
             ],
         ];

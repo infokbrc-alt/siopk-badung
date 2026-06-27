@@ -2,10 +2,10 @@
 
 namespace Tests\Unit;
 
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Services\LaporanService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -26,7 +26,7 @@ class LaporanServiceTest extends TestCase
         $kecamatan = Kecamatan::create(['nama' => 'Mengwi', 'kode' => 'MW']);
         DesaDinas::create(['nama' => 'Mengwi', 'kecamatan_id' => $kecamatan->id]);
 
-        $this->service = new LaporanService();
+        $this->service = new LaporanService;
     }
 
     public function test_create_laporan_returns_opk_laporan_with_menunggu_status(): void
@@ -50,7 +50,7 @@ class LaporanServiceTest extends TestCase
 
         $this->assertInstanceOf(OpkLaporan::class, $laporan);
         $this->assertEquals('menunggu', $laporan->status_verifikasi);
-        $this->assertStringStartsWith('SIOPK-' . date('Y') . '-', $laporan->kode_laporan);
+        $this->assertStringStartsWith('SIOPK-'.date('Y').'-', $laporan->kode_laporan);
     }
 
     public function test_upload_fotos_creates_foto_records(): void

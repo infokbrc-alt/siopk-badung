@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         // Tambah deleted_at jika belum ada (untuk SoftDeletes)
-        if (!Schema::hasColumn('opk_laporans', 'deleted_at')) {
+        if (! Schema::hasColumn('opk_laporans', 'deleted_at')) {
             Schema::table('opk_laporans', function (Blueprint $table) {
                 $table->softDeletes();
             });

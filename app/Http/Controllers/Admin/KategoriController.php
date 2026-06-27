@@ -22,8 +22,8 @@ class KategoriController extends Controller
     {
         $validated = $request->validate([
             'nomor' => 'required|integer|min:1|max:99|unique:opk_categories,nomor',
-            'nama'  => 'required|string|max:100',
-            'ikon'  => 'nullable|string|max:10',
+            'nama' => 'required|string|max:100',
+            'ikon' => 'nullable|string|max:10',
             'deskripsi' => 'nullable|string|max:255',
         ], [
             'nomor.unique' => 'Nomor kategori sudah digunakan.',
@@ -31,6 +31,7 @@ class KategoriController extends Controller
 
         $cat = OpkCategory::create($validated);
         Cache::forget('kategori_list');
+
         return back()->with('success', "Kategori '{$cat->nama}' berhasil ditambahkan.");
     }
 
@@ -38,8 +39,8 @@ class KategoriController extends Controller
     {
         $validated = $request->validate([
             'nomor' => "required|integer|min:1|max:99|unique:opk_categories,nomor,{$kategori->id}",
-            'nama'  => 'required|string|max:100',
-            'ikon'  => 'nullable|string|max:10',
+            'nama' => 'required|string|max:100',
+            'ikon' => 'nullable|string|max:10',
             'deskripsi' => 'nullable|string|max:255',
         ], [
             'nomor.unique' => 'Nomor kategori sudah digunakan.',
@@ -47,6 +48,7 @@ class KategoriController extends Controller
 
         $kategori->update($validated);
         Cache::forget('kategori_list');
+
         return back()->with('success', "Kategori '{$kategori->nama}' berhasil diperbarui.");
     }
 
@@ -59,6 +61,7 @@ class KategoriController extends Controller
         $nama = $kategori->nama;
         $kategori->delete();
         Cache::forget('kategori_list');
+
         return back()->with('success', "Kategori '{$nama}' berhasil dihapus.");
     }
 }

@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Events\LaporanVerified;
-use App\Models\{OpkLaporan, OpkRiwayatStatus, User};
+use App\Models\OpkLaporan;
+use App\Models\OpkRiwayatStatus;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -17,9 +19,9 @@ class VerifikasiService
     public function tolakLaporan(OpkLaporan $laporan, User $verifikator, string $alasan, string $catatan): void
     {
         $statusBaru = $alasan === 'duplikat' ? 'duplikat' : 'ditolak';
-        $catatan    = $alasan === 'duplikat'
-            ? "[duplikat] " . $catatan
-            : "[{$alasan}] " . $catatan;
+        $catatan = $alasan === 'duplikat'
+            ? '[duplikat] '.$catatan
+            : "[{$alasan}] ".$catatan;
 
         $this->updateStatus($laporan, $verifikator, $statusBaru, $catatan);
     }
@@ -31,18 +33,18 @@ class VerifikasiService
             $statusLama = $laporan->status_verifikasi;
 
             $laporan->update([
-                'status_verifikasi'  => $statusBaru,
-                'diverifikasi_oleh'  => $verifikator->id,
+                'status_verifikasi' => $statusBaru,
+                'diverifikasi_oleh' => $verifikator->id,
                 'tanggal_verifikasi' => now(),
                 'catatan_verifikasi' => $catatan,
             ]);
 
             OpkRiwayatStatus::create([
-                'laporan_id'  => $laporan->id,
+                'laporan_id' => $laporan->id,
                 'status_lama' => $statusLama,
                 'status_baru' => $statusBaru,
-                'user_id'     => $verifikator->id,
-                'catatan'     => $catatan ?? ($statusBaru === 'disetujui' ? 'Disetujui oleh verifikator.' : 'Ditolak oleh verifikator.'),
+                'user_id' => $verifikator->id,
+                'catatan' => $catatan ?? ($statusBaru === 'disetujui' ? 'Disetujui oleh verifikator.' : 'Ditolak oleh verifikator.'),
             ]);
 
             DB::commit();

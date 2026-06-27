@@ -9,7 +9,7 @@ class WhatsAppServiceTest extends TestCase
 {
     public function test_is_enabled_returns_bool(): void
     {
-        $service = new WhatsAppService();
+        $service = new WhatsAppService;
 
         $this->assertIsBool($service->isEnabled());
     }

@@ -2,11 +2,11 @@
 
 namespace Tests\Unit;
 
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
 use App\Models\OpkFoto;
+use App\Models\OpkLaporan;
 use App\Services\OpkMediaService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +18,7 @@ class OpkMediaServiceTest extends TestCase
     use RefreshDatabase;
 
     private OpkMediaService $service;
+
     private OpkLaporan $laporan;
 
     protected function setUp(): void
@@ -43,7 +44,7 @@ class OpkMediaServiceTest extends TestCase
             'pelapor_whatsapp' => '08123456789',
         ]);
 
-        $this->service = new OpkMediaService();
+        $this->service = new OpkMediaService;
     }
 
     public function test_delete_fotos_removes_specified_photos(): void

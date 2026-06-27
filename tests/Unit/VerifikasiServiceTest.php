@@ -2,11 +2,10 @@
 
 namespace Tests\Unit;
 
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
-use App\Models\OpkRiwayatStatus;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Models\User;
 use App\Services\VerifikasiService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,7 +16,9 @@ class VerifikasiServiceTest extends TestCase
     use RefreshDatabase;
 
     private VerifikasiService $service;
+
     private User $verifikator;
+
     private OpkLaporan $laporan;
 
     protected function setUp(): void
@@ -45,7 +46,7 @@ class VerifikasiServiceTest extends TestCase
             'pelapor_whatsapp' => '08123456789',
         ]);
 
-        $this->service = new VerifikasiService();
+        $this->service = new VerifikasiService;
     }
 
     public function test_setujui_laporan_changes_status_to_disetujui(): void

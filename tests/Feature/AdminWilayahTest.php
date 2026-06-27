@@ -2,10 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
 use App\Models\Kecamatan;
-use App\Models\DesaDinas;
-use App\Models\DesaAdat;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -14,6 +12,7 @@ class AdminWilayahTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private Kecamatan $kecamatan;
 
     protected function setUp(): void
@@ -43,7 +42,7 @@ class AdminWilayahTest extends TestCase
 
     public function test_kecamatan_update_changes_data(): void
     {
-        $response = $this->actingAs($this->admin)->put('/admin/wilayah/kecamatan/' . $this->kecamatan->id, [
+        $response = $this->actingAs($this->admin)->put('/admin/wilayah/kecamatan/'.$this->kecamatan->id, [
             'nama' => 'Kuta Updated',
             'kode' => 'KU',
         ]);
@@ -54,7 +53,7 @@ class AdminWilayahTest extends TestCase
 
     public function test_kecamatan_destroy_deletes(): void
     {
-        $response = $this->actingAs($this->admin)->delete('/admin/wilayah/kecamatan/' . $this->kecamatan->id);
+        $response = $this->actingAs($this->admin)->delete('/admin/wilayah/kecamatan/'.$this->kecamatan->id);
         $response->assertRedirect();
 
         $this->assertNull(Kecamatan::find($this->kecamatan->id));

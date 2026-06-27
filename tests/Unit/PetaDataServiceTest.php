@@ -2,10 +2,10 @@
 
 namespace Tests\Unit;
 
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Services\PetaDataService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -43,12 +43,12 @@ class PetaDataServiceTest extends TestCase
             'longitude' => 115.1686,
         ]);
 
-        $this->service = new PetaDataService();
+        $this->service = new PetaDataService;
     }
 
     public function test_get_peta_data_returns_array(): void
     {
-        $request = new Request();
+        $request = new Request;
         $data = $this->service->getPetaData($request);
 
         $this->assertIsArray($data);
@@ -58,7 +58,7 @@ class PetaDataServiceTest extends TestCase
 
     public function test_get_peta_data_admin_returns_array(): void
     {
-        $request = new Request();
+        $request = new Request;
         $data = $this->service->getPetaData($request, true);
 
         $this->assertIsArray($data);

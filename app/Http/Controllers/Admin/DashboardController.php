@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\CacheKeys;
-use App\Models\{OpkLaporan, OpkCategory, Kecamatan};
+use App\Http\Controllers\Controller;
+use App\Models\OpkLaporan;
 use App\Services\OpkStatsService;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,7 +21,7 @@ class DashboardController extends Controller
         $data = Cache::remember($cacheKey, 60, function () {
             $stats = $this->statsService->dashboardAdmin();
 
-            $perKategori  = $this->statsService->kategoriWithOpkCount();
+            $perKategori = $this->statsService->kategoriWithOpkCount();
             $perKecamatan = $this->statsService->kecamatanWithOpkCount();
 
             $prioritas = OpkLaporan::with(['kategori', 'kecamatan', 'fotoUtama'])
@@ -39,9 +39,9 @@ class DashboardController extends Controller
                 ->get();
 
             $petaData = OpkLaporan::select([
-                    'id', 'kode_laporan', 'nama_opk', 'kondisi',
-                    'latitude', 'longitude', 'kategori_id', 'kecamatan_id'
-                ])
+                'id', 'kode_laporan', 'nama_opk', 'kondisi',
+                'latitude', 'longitude', 'kategori_id', 'kecamatan_id',
+            ])
                 ->with(['kategori:id,nama,ikon', 'kecamatan:id,nama'])
                 ->disetujui()
                 ->whereNotNull('latitude')

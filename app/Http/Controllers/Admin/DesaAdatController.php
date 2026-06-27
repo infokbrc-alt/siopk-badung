@@ -13,7 +13,7 @@ class DesaAdatController extends Controller
     {
         $validated = $request->validate([
             'kecamatan_id' => 'required|exists:kecamatans,id',
-            'nama'         => 'required|string|max:150',
+            'nama' => 'required|string|max:150',
         ]);
 
         DesaAdat::create($validated);

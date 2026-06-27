@@ -13,32 +13,35 @@ class AuthController extends Controller
         if (Auth::check()) {
             return $this->redirectByRole(Auth::user()->role);
         }
+
         return view('auth.login');
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|min:6',
         ], [
-            'email.required'    => 'Email wajib diisi.',
-            'email.email'       => 'Format email tidak valid.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
             'password.required' => 'Password wajib diisi.',
         ]);
 
         $credentials = $request->only('email', 'password');
-        $remember    = $request->boolean('remember');
+        $remember = $request->boolean('remember');
 
         if (Auth::attempt($credentials, $remember)) {
             $user = Auth::user();
 
-            if (!$user->is_active) {
+            if (! $user->is_active) {
                 Auth::logout();
+
                 return back()->with('error', 'Akun Anda tidak aktif. Hubungi administrator.');
             }
 
             $request->session()->regenerate();
+
             return $this->redirectByRole($user->role);
         }
 
@@ -50,15 +53,15 @@ class AuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('login')->with('success', 'Anda telah berhasil logout.');
     }
 
     private function redirectByRole(string $role)
     {
-        return match($role) {
-            'superadmin', 'admin', 'verifikator', 'petugas'
-                         => redirect()->route('admin.dashboard'),
-            default      => redirect()->route('publik.lapor.index'),
+        return match ($role) {
+            'superadmin', 'admin', 'verifikator', 'petugas' => redirect()->route('admin.dashboard'),
+            default => redirect()->route('publik.lapor.index'),
         };
     }
 }

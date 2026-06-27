@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Helpers\CacheKeys;
 use App\Models\OpkLaporan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -15,8 +14,8 @@ class PetaDataService
         $version = (int) Cache::get('peta_data_version', 1);
 
         $cacheKey = $isAdmin
-            ? 'peta_admin_v' . $version . '_' . md5(serialize($request->only(['kondisi', 'kategori_id', 'kecamatan_id'])))
-            : 'peta_publik_v' . $version . '_' . md5($request->get('kondisi', '') . '|' . $request->get('kategori_id', '') . '|' . $request->get('kecamatan_id', ''));
+            ? 'peta_admin_v'.$version.'_'.md5(serialize($request->only(['kondisi', 'kategori_id', 'kecamatan_id'])))
+            : 'peta_publik_v'.$version.'_'.md5($request->get('kondisi', '').'|'.$request->get('kategori_id', '').'|'.$request->get('kecamatan_id', ''));
 
         return Cache::remember($cacheKey, 1800, function () use ($request, $isAdmin) {
             return $this->buildPetaData($request, $isAdmin);
@@ -47,7 +46,7 @@ class PetaDataService
         $this->applyBounds($query, $request);
 
         $markers = $query->limit(500)->get()
-            ->map(fn($opk) => $this->formatMarker($opk, $isAdmin))
+            ->map(fn ($opk) => $this->formatMarker($opk, $isAdmin))
             ->all();
 
         if (count($markers) >= 500) {
@@ -99,34 +98,34 @@ class PetaDataService
     {
         if ($isAdmin) {
             return [
-                'id'            => $opk->id,
-                'kode'          => $opk->kode_laporan,
-                'nama'          => e($opk->nama_opk),
-                'kondisi'       => $opk->kondisi,
-                'lat'           => (float) $opk->latitude,
-                'lng'           => (float) $opk->longitude,
-                'kategori'      => e($opk->kategori?->nama ?? ''),
+                'id' => $opk->id,
+                'kode' => $opk->kode_laporan,
+                'nama' => e($opk->nama_opk),
+                'kondisi' => $opk->kondisi,
+                'lat' => (float) $opk->latitude,
+                'lng' => (float) $opk->longitude,
+                'kategori' => e($opk->kategori?->nama ?? ''),
                 'ikon_kategori' => e($opk->kategori?->ikon ?? ''),
-                'kecamatan'     => e($opk->kecamatan?->nama ?? ''),
-                'desa_adat'     => e($opk->nama_desa_adat ?? ''),
+                'kecamatan' => e($opk->kecamatan?->nama ?? ''),
+                'desa_adat' => e($opk->nama_desa_adat ?? ''),
                 'urgency_score' => $opk->ai_urgency_score,
-                'foto_url'      => $opk->fotoUtama ? asset('storage/' . $opk->fotoUtama->path) : null,
-                'detail_url'    => route('admin.opk.show', $opk->id),
+                'foto_url' => $opk->fotoUtama ? asset('storage/'.$opk->fotoUtama->path) : null,
+                'detail_url' => route('admin.opk.show', $opk->id),
             ];
         }
 
         return [
-            'id'       => $opk->id,
-            'nama'     => e($opk->nama_opk),
-            'kondisi'  => $opk->kondisi,
-            'lat'      => (float) $opk->latitude,
-            'lng'      => (float) $opk->longitude,
+            'id' => $opk->id,
+            'nama' => e($opk->nama_opk),
+            'kondisi' => $opk->kondisi,
+            'lat' => (float) $opk->latitude,
+            'lng' => (float) $opk->longitude,
             'kategori' => e($opk->kategori?->nama ?? ''),
-            'ikon'     => e($opk->kategori?->ikon ?? ''),
-            'kec'      => e($opk->kecamatan?->nama ?? ''),
-            'desa'     => e($opk->nama_desa_adat ?? ''),
-            'foto'     => $opk->fotoUtama ? asset('storage/' . $opk->fotoUtama->path) : null,
-            'url'      => route('publik.opk.show', $opk->id),
+            'ikon' => e($opk->kategori?->ikon ?? ''),
+            'kec' => e($opk->kecamatan?->nama ?? ''),
+            'desa' => e($opk->nama_desa_adat ?? ''),
+            'foto' => $opk->fotoUtama ? asset('storage/'.$opk->fotoUtama->path) : null,
+            'url' => route('publik.opk.show', $opk->id),
         ];
     }
 }

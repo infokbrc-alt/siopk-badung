@@ -2,9 +2,9 @@
 
 namespace Tests\Unit;
 
-use App\Enums\StatusVerifikasi;
-use App\Enums\KondisiOpk;
 use App\Enums\AiProvider;
+use App\Enums\KondisiOpk;
+use App\Enums\StatusVerifikasi;
 use App\Enums\UserRole;
 use Tests\TestCase;
 

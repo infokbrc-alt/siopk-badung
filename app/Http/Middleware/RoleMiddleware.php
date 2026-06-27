@@ -13,18 +13,19 @@ class RoleMiddleware
      */
     public function handle(Request $request, Closure $next, string ...$roles)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login')->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $user = auth()->user();
 
-        if (!$user->is_active) {
+        if (! $user->is_active) {
             auth()->logout();
+
             return redirect()->route('login')->with('error', 'Akun Anda tidak aktif. Hubungi administrator.');
         }
 
-        if (!in_array($user->role, $roles)) {
+        if (! in_array($user->role, $roles)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class DesaDinas extends Model
 {
     protected $table = 'desa_dinas';
+
     protected $fillable = ['kecamatan_id', 'nama', 'kode'];
 
     public function kecamatan()

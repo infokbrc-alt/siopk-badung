@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\{OpkLaporan, OpkFoto};
-use Illuminate\Http\UploadedFile;
+use App\Models\OpkFoto;
+use App\Models\OpkLaporan;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -28,28 +28,28 @@ class OpkMediaService
     public function uploadFotos(OpkLaporan $laporan, array $files, int $deletedCount = 0): void
     {
         $existingCount = OpkFoto::where('laporan_id', $laporan->id)->count();
-        $newCount      = count($files);
+        $newCount = count($files);
 
         if (($existingCount - $deletedCount + $newCount) > 10) {
             throw new \RuntimeException(
-                'Maksimal 10 foto per OPK. Anda memiliki ' . ($existingCount - $deletedCount) . ' foto, mencoba upload ' . $newCount . ' foto baru.'
+                'Maksimal 10 foto per OPK. Anda memiliki '.($existingCount - $deletedCount).' foto, mencoba upload '.$newCount.' foto baru.'
             );
         }
 
         $urutanAwal = OpkFoto::where('laporan_id', $laporan->id)->max('urutan') ?? -1;
 
         foreach ($files as $index => $foto) {
-            $namaFile = Str::uuid() . '.' . $foto->getClientOriginalExtension();
-            $path     = $foto->storeAs('foto_opk/' . $laporan->id, $namaFile, 'public');
+            $namaFile = Str::uuid().'.'.$foto->getClientOriginalExtension();
+            $path = $foto->storeAs('foto_opk/'.$laporan->id, $namaFile, 'public');
 
             OpkFoto::create([
-                'laporan_id'   => $laporan->id,
-                'nama_file'    => $foto->getClientOriginalName(),
-                'path'         => $path,
-                'is_utama'     => false,
-                'urutan'       => $urutanAwal + $index + 1,
+                'laporan_id' => $laporan->id,
+                'nama_file' => $foto->getClientOriginalName(),
+                'path' => $path,
+                'is_utama' => false,
+                'urutan' => $urutanAwal + $index + 1,
                 'ukuran_bytes' => $foto->getSize(),
-                'mime_type'    => $foto->getMimeType(),
+                'mime_type' => $foto->getMimeType(),
             ]);
         }
     }

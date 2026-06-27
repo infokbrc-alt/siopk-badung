@@ -2,21 +2,23 @@
 
 namespace App\Jobs;
 
-use App\Models\{OpkLaporan, OpkRiwayatStatus};
+use App\Events\AiAnalysisCompleted;
+use App\Models\OpkLaporan;
+use App\Models\OpkRiwayatStatus;
 use App\Services\AiOpkAnalyzer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\{InteractsWithQueue, SerializesModels};
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use App\Events\AiAnalysisCompleted;
 
 /**
  * AnalisisOpkJob
- * 
+ *
  * Dijalankan secara background (queue) setelah laporan baru masuk.
  * Memanggil AiOpkAnalyzer lalu menyimpan hasilnya ke database.
- * 
+ *
  * Untuk development XAMPP (QUEUE_CONNECTION=sync), job ini
  * langsung berjalan synchronous tanpa perlu worker terpisah.
  */
@@ -24,7 +26,8 @@ class AnalisisOpkJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public int $tries   = 3;
+    public int $tries = 3;
+
     public int $timeout = 60;
 
     public function __construct(
@@ -35,8 +38,9 @@ class AnalisisOpkJob implements ShouldQueue
     {
         $laporan = OpkLaporan::with(['kategori', 'kecamatan'])->find($this->laporanId);
 
-        if (!$laporan) {
+        if (! $laporan) {
             Log::warning("AnalisisOpkJob: laporan ID {$this->laporanId} tidak ditemukan.");
+
             return;
         }
 
@@ -51,19 +55,19 @@ class AnalisisOpkJob implements ShouldQueue
 
             // Simpan hasil ke database
             $laporan->update([
-                'ai_urgency_score'  => $hasil['urgency_score'],
+                'ai_urgency_score' => $hasil['urgency_score'],
                 'ai_duplikat_score' => $hasil['duplikat_score'],
-                'ai_duplikat_of'    => $hasil['duplikat_id'],
-                'ai_rekomendasi'    => $this->formatRekomendasi($hasil),
+                'ai_duplikat_of' => $hasil['duplikat_id'],
+                'ai_rekomendasi' => $this->formatRekomendasi($hasil),
                 'status_verifikasi' => 'review_dinas',
             ]);
 
             // Catat riwayat
             OpkRiwayatStatus::create([
-                'laporan_id'  => $laporan->id,
+                'laporan_id' => $laporan->id,
                 'status_lama' => 'ai_review',
                 'status_baru' => 'review_dinas',
-                'catatan'     => sprintf(
+                'catatan' => sprintf(
                     'AI Score: %.1f/10 | Duplikat: %.0f%% | %s',
                     $hasil['urgency_score'],
                     $hasil['duplikat_score'],
@@ -76,7 +80,7 @@ class AnalisisOpkJob implements ShouldQueue
             AiAnalysisCompleted::dispatch($laporan);
 
         } catch (\Exception $e) {
-            Log::error("AnalisisOpkJob gagal untuk {$laporan->kode_laporan}: " . $e->getMessage());
+            Log::error("AnalisisOpkJob gagal untuk {$laporan->kode_laporan}: ".$e->getMessage());
 
             // Kembalikan ke antrian manual jika AI gagal
             $laporan->update(['status_verifikasi' => 'review_dinas']);
@@ -85,7 +89,7 @@ class AnalisisOpkJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
-        Log::error("AnalisisOpkJob FAILED laporan ID {$this->laporanId}: " . $e->getMessage());
+        Log::error("AnalisisOpkJob FAILED laporan ID {$this->laporanId}: ".$e->getMessage());
 
         // Pastikan laporan tetap bisa diverifikasi manual
         OpkLaporan::where('id', $this->laporanId)
@@ -97,12 +101,12 @@ class AnalisisOpkJob implements ShouldQueue
     {
         $parts = [];
 
-        if (!empty($hasil['rekomendasi'])) {
+        if (! empty($hasil['rekomendasi'])) {
             $parts[] = $hasil['rekomendasi'];
         }
 
-        if (!empty($hasil['saran_verifikasi'])) {
-            $parts[] = '[Saran Verifikator: ' . $hasil['saran_verifikasi'] . ']';
+        if (! empty($hasil['saran_verifikasi'])) {
+            $parts[] = '[Saran Verifikator: '.$hasil['saran_verifikasi'].']';
         }
 
         return implode(' ', $parts);

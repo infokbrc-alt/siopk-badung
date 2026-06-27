@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Helpers\CacheKeys;
-use App\Models\{OpkLaporan, OpkCategory, Kecamatan};
+use App\Http\Controllers\Controller;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
 use App\Services\OpkStatsService;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -21,14 +24,14 @@ class LaporanAdminController extends Controller
             $stats = $this->statsService->laporanAdmin();
 
             $perKategori = OpkCategory::withCount([
-                'laporans as total'   => fn($q) => $q->disetujui(),
-                'laporans as kritis'  => fn($q) => $q->disetujui()->kritis(),
-                'laporans as waspada' => fn($q) => $q->disetujui()->waspada(),
+                'laporans as total' => fn ($q) => $q->disetujui(),
+                'laporans as kritis' => fn ($q) => $q->disetujui()->kritis(),
+                'laporans as waspada' => fn ($q) => $q->disetujui()->waspada(),
             ])->orderByDesc('total')->get();
 
             $perKecamatan = Kecamatan::withCount([
-                'laporans as total'   => fn($q) => $q->disetujui(),
-                'laporans as kritis'  => fn($q) => $q->disetujui()->kritis(),
+                'laporans as total' => fn ($q) => $q->disetujui(),
+                'laporans as kritis' => fn ($q) => $q->disetujui()->kritis(),
             ])->orderByDesc('total')->get();
 
             $driver = DB::connection()->getDriverName();
@@ -40,18 +43,18 @@ class LaporanAdminController extends Controller
                 : 'YEAR(created_at)';
 
             $tren = OpkLaporan::select(
-                    DB::raw("{$monthExpr} as bulan"),
-                    DB::raw("{$yearExpr} as tahun"),
-                    DB::raw('COUNT(*) as total')
-                )
+                DB::raw("{$monthExpr} as bulan"),
+                DB::raw("{$yearExpr} as tahun"),
+                DB::raw('COUNT(*) as total')
+            )
                 ->where('created_at', '>=', now()->subMonths(6))
                 ->groupBy('tahun', 'bulan')
                 ->orderBy('tahun')->orderBy('bulan')
                 ->get()
-                ->map(fn($r) => [
-                    'label' => \Carbon\Carbon::createFromDate($r->tahun, $r->bulan, 1)->isoFormat('MMM Y'),
-                    'total' => $r->total,
-                ]);
+                ->map(fn ($r) => [
+                'label' => Carbon::createFromDate($r->tahun, $r->bulan, 1)->isoFormat('MMM Y'),
+                'total' => $r->total,
+            ]);
 
             $topUrgensi = OpkLaporan::with(['kategori', 'kecamatan'])
                 ->disetujui()
@@ -69,10 +72,10 @@ class LaporanAdminController extends Controller
     // Export CSV — streaming dengan cursor
     public function exportCsv()
     {
-        $filename = 'opk-badung-' . now()->format('Y-m-d') . '.csv';
+        $filename = 'opk-badung-'.now()->format('Y-m-d').'.csv';
 
         $headers = [
-            'Content-Type'        => 'text/csv',
+            'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
         ];
 

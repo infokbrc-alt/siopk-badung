@@ -53,7 +53,7 @@ class AdminPenggunaTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'petugas']);
 
-        $response = $this->actingAs($this->admin)->get('/admin/pengguna/' . $user->id . '/edit');
+        $response = $this->actingAs($this->admin)->get('/admin/pengguna/'.$user->id.'/edit');
         $response->assertSuccessful();
     }
 
@@ -61,7 +61,7 @@ class AdminPenggunaTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'petugas']);
 
-        $response = $this->actingAs($this->admin)->put('/admin/pengguna/' . $user->id, [
+        $response = $this->actingAs($this->admin)->put('/admin/pengguna/'.$user->id, [
             'name' => 'Updated Name',
             'email' => $user->email,
             'role' => 'verifikator',
@@ -80,7 +80,7 @@ class AdminPenggunaTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'petugas', 'is_active' => true]);
 
-        $response = $this->actingAs($this->admin)->post('/admin/pengguna/' . $user->id . '/toggle');
+        $response = $this->actingAs($this->admin)->post('/admin/pengguna/'.$user->id.'/toggle');
         $response->assertRedirect();
 
         $this->assertFalse(User::find($user->id)->is_active);
@@ -90,7 +90,7 @@ class AdminPenggunaTest extends TestCase
     {
         $user = User::factory()->create(['role' => 'petugas']);
 
-        $response = $this->actingAs($this->admin)->delete('/admin/pengguna/' . $user->id);
+        $response = $this->actingAs($this->admin)->delete('/admin/pengguna/'.$user->id);
         $response->assertRedirect();
 
         $this->assertNull(User::find($user->id));

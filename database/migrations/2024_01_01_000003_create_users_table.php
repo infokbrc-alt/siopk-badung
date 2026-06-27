@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('password');
             // Role: superadmin | admin | verifikator | petugas | publik
             $table->enum('role', ['superadmin', 'admin', 'verifikator', 'petugas', 'publik'])
-                  ->default('publik');
+                ->default('publik');
             $table->string('nip', 30)->nullable();       // untuk petugas dinas
             $table->string('no_hp', 20)->nullable();
             $table->string('instansi', 150)->nullable();

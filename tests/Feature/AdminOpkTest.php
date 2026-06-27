@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use App\Models\OpkLaporan;
-use App\Models\OpkCategory;
-use App\Models\Kecamatan;
 use App\Models\DesaDinas;
+use App\Models\Kecamatan;
+use App\Models\OpkCategory;
+use App\Models\OpkLaporan;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -15,6 +15,7 @@ class AdminOpkTest extends TestCase
     use RefreshDatabase;
 
     private User $admin;
+
     private OpkLaporan $laporan;
 
     protected function setUp(): void
@@ -52,19 +53,19 @@ class AdminOpkTest extends TestCase
 
     public function test_opk_show_detail_page_loads(): void
     {
-        $response = $this->actingAs($this->admin)->get('/admin/opk/' . $this->laporan->id);
+        $response = $this->actingAs($this->admin)->get('/admin/opk/'.$this->laporan->id);
         $response->assertSuccessful();
     }
 
     public function test_opk_edit_page_loads(): void
     {
-        $response = $this->actingAs($this->admin)->get('/admin/opk/' . $this->laporan->id . '/edit');
+        $response = $this->actingAs($this->admin)->get('/admin/opk/'.$this->laporan->id.'/edit');
         $response->assertSuccessful();
     }
 
     public function test_opk_update_changes_data(): void
     {
-        $response = $this->actingAs($this->admin)->put('/admin/opk/' . $this->laporan->id, [
+        $response = $this->actingAs($this->admin)->put('/admin/opk/'.$this->laporan->id, [
             'nama_opk' => 'Tari Legong Updated',
             'kondisi' => 'waspada',
             'status_pelindungan' => 'belum_terdaftar',
@@ -81,7 +82,7 @@ class AdminOpkTest extends TestCase
 
     public function test_opk_soft_delete(): void
     {
-        $response = $this->actingAs($this->admin)->delete('/admin/opk/' . $this->laporan->id);
+        $response = $this->actingAs($this->admin)->delete('/admin/opk/'.$this->laporan->id);
         $response->assertRedirect();
 
         $this->assertSoftDeleted('opk_laporans', ['id' => $this->laporan->id]);
@@ -91,7 +92,7 @@ class AdminOpkTest extends TestCase
     {
         $this->laporan->delete();
 
-        $response = $this->actingAs($this->admin)->post('/admin/opk/' . $this->laporan->id . '/restore');
+        $response = $this->actingAs($this->admin)->post('/admin/opk/'.$this->laporan->id.'/restore');
         $response->assertRedirect();
 
         $this->assertNotSoftDeleted('opk_laporans', ['id' => $this->laporan->id]);
@@ -121,7 +122,7 @@ class AdminOpkTest extends TestCase
     {
         $petugas = User::factory()->create(['role' => 'petugas']);
 
-        $response = $this->actingAs($petugas)->get('/admin/opk/' . $this->laporan->id . '/edit');
+        $response = $this->actingAs($petugas)->get('/admin/opk/'.$this->laporan->id.'/edit');
         $response->assertForbidden();
     }
 
@@ -129,7 +130,7 @@ class AdminOpkTest extends TestCase
     {
         $petugas = User::factory()->create(['role' => 'petugas']);
 
-        $response = $this->actingAs($petugas)->get('/admin/opk/' . $this->laporan->id);
+        $response = $this->actingAs($petugas)->get('/admin/opk/'.$this->laporan->id);
         $response->assertSuccessful();
     }
 }
