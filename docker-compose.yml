@@ -36,7 +36,7 @@ services:
 
   # MySQL Database
   mysql:
-    image: mysql:8.0
+    image: mysql:8.4
     container_name: siopk-mysql
     restart: unless-stopped
     environment:
@@ -54,7 +54,7 @@ services:
 
   # Redis (Session + Cache)
   redis:
-    image: redis:7-alpine
+    image: redis:8-alpine
     container_name: siopk-redis
     restart: unless-stopped
     command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
@@ -83,7 +83,7 @@ services:
 
   # Task Scheduler
   scheduler:
-    image: php:8.3-cli
+    image: php:8.4-cli
     container_name: siopk-scheduler
     restart: unless-stopped
     working_dir: /var/www/html

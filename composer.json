@@ -4,7 +4,7 @@
     "keywords": ["laravel", "opk", "kebudayaan", "badung", "bali", "webgis"],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.9"
     },
@@ -55,7 +55,7 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "platform": {
-            "php": "8.3.0"
+            "php": "8.4.0"
         },
         "allow-plugins": {
             "pestphp/pest-plugin": true,
